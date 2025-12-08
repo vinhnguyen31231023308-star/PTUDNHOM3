@@ -1,0 +1,42 @@
+@model IEnumerable<EcommerceMVC.Models.Category>
+@{
+    ViewData["Title"] = "Categories";
+    bool isAdmin = User.IsInRole("Admin");
+}
+
+<h1>Categories</h1>
+
+@if (isAdmin)
+{
+    <p>
+        <a asp-action="Create" class="btn btn-primary">Create New Category</a>
+    </p>
+}
+
+<table class="table table-striped table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Name)</th>
+            @if (isAdmin)
+            {
+                <th style="width: 220px;">Actions</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@Html.DisplayFor(modelItem => item.Name)</td>
+            @if (isAdmin)
+            {
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.CategoryId" class="btn btn-sm btn-warning me-1">Edit</a>
+                    <a asp-action="Details" asp-route-id="@item.CategoryId" class="btn btn-sm btn-info me-1">Details</a>
+                    <a asp-action="Delete" asp-route-id="@item.CategoryId" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            }
+        </tr>
+    }
+    </tbody>
+</table>

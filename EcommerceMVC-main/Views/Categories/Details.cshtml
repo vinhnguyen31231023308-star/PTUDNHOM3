@@ -1,0 +1,21 @@
+@model EcommerceMVC.Models.Category
+
+@{
+    ViewData["Title"] = "Category Details";
+}
+
+<h1>Category Details</h1>
+
+<div class="card p-4 mb-4 shadow-sm">
+    <h4>Category</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-3 fw-semibold">@Html.DisplayNameFor(model => model.Name)</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Name)</dd>
+    </dl>
+</div>
+
+<div class="mb-3">
+    <a asp-action="Edit" asp-route-id="@Model?.CategoryId" class="btn btn-primary me-2">Edit</a>
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</div>
