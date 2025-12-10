@@ -1,0 +1,33 @@
+﻿<a asp-controller="productcart" asp-action="index">Continue Shopping</a>
+<h3>Cart</h3>
+<table border="1">
+	<tr>
+		<th>Action</th>
+		<th>Id</th>
+		<th>Name</th>
+		<th>Photo</th>
+		<th>Price</th>
+		<th>Quantity</th>
+		<th>Sub Total</th>
+	</tr>
+	@foreach (var item in ViewBag.cart)
+	{
+		<tr>
+			<td align="center">
+				<a asp-controller="cart" asp-action="remove" asp-route-id="@item.Id">X</a>
+			</td>
+			<td>@item.Id</td>
+			<td>@item.Name</td>
+			<td>
+				<img src="~/images/@item.Photo" width="70" height="70" />
+			</td>
+			<td>@item.Price</td>
+			<td>@item.Quantity</td>
+			<td>@(item.Price * item.Quantity)</td>
+		</tr>
+	}
+	<tr>
+		<td colspan="6" align="right">Total</td>
+		<td>@ViewBag.total</td>
+	</tr>
+</table>
