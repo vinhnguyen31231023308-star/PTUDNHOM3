@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sản phẩm yêu thích</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/wishlist.css">
+</head>
+<body>
+    <div class="top-bar">
+        <div class="marquee-content">
+            <span>⚡️ GIẢM GIÁ SỐC 20% TOÀN BỘ SẢN PHẨM — HÀNG MỚI VỀ — MIỄN PHÍ VẬN CHUYỂN CHO ĐƠN TỪ 59K ⚡️ CHÀO MỪNG BẠN ĐẾN VỚI HAIRNOVA — ƯU ĐÃI LỚN NHẤT TRONG NĂM ⚡️</span>
+        </div>
+    </div>
+    <header>
+        <a href="#" class="logo">
+            <img src="img/imgwishlist/LOGO3.png" alt="Logo HairNova" style="width: 180px; height: auto; vertical-align: middle; display: inline-block;">
+        </a>
+        <nav>
+            <ul>
+                <li><a href="index.html#">Trang chủ</a></li>
+                <li><a href="shop.html#">Cửa hàng</a></li>
+                <li><a href="news.html#">Tin tức</a></li>
+                <li><a href="aboutus.html">Giới thiệu</a></li>
+                <li><a href="contact.html#">Liên hệ</a></li>
+                <li><a href="policy.html#">Chính sách</a></li>
+
+            </ul>
+        </nav>
+        <div class="header-actions">
+            <a href="wishlist.html#" class="icon-btn" title="Tìm kiếm">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </a>
+
+            <a href="wishlist.html"  class="icon-btn" title="Yêu thích">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                <span class="badge-count">2</span>
+            </a>
+
+            <a href="cart.html" class="icon-btn" title="Giỏ hàng">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                <span class="badge-count cart-badge">3</span>
+            </a>
+
+            <a href="account.html" class="icon-btn" title="Tài khoản">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <main class="wishlist-page">
+        <!-- DANH SÁCH YÊU THÍCH -->
+        <section class="wishlist-section">
+            <h2 class="section-title">
+                DANH SÁCH YÊU THÍCH <span class="wishlist-count">(3 sản phẩm)</span>
+            </h2>
+
+            <div class="wishlist-table" id="wishlistTable">
+                <div class="wishlist-header-row">
+                    <div class="w-col w-col-product">Sản phẩm</div>
+                    <div class="w-col w-col-date">Ngày</div>
+                    <div class="w-col w-col-status">Trạng thái</div>
+                    <div class="w-col w-col-price">Đơn giá</div>
+                    <div class="w-col w-col-actions"></div>
+                </div>
+
+                <!-- ITEM 1 -->
+                <div class="wishlist-row" data-id="10">
+                    <div class="w-col w-col-product">
+                        <img src="img/imgwishlist/sp1.jpg" alt="Dầu xả bưởi MILAGANICS 250ml" class="w-thumb" />
+                        <div class="w-prod-info">
+                            <div class="w-prod-brand">MILAGANICS</div>
+                            <a href="#" class="w-prod-name">Dầu xả bưởi MILAGANICS 250ml</a>
+                        </div>
+                    </div>
+                    <div class="w-col w-col-date">
+                        <span class="w-date">28/11/2025</span>
+                    </div>
+                    <div class="w-col w-col-status">
+                        <span class="w-status w-status-instock">Còn hàng</span>
+                    </div>
+                    <div class="w-col w-col-price">
+                        <span class="w-price">135.000 đ</span>
+                    </div>
+                    <div class="w-col w-col-actions">
+                        <button class="btn-outline btn-detail">Xem chi tiết</button>
+                        <button class="btn-primary btn-add-cart">Thêm vào giỏ hàng</button>
+                        <button class="btn-icon btn-remove" aria-label="Xóa sản phẩm">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ITEM 2 -->
+                <div class="wishlist-row" data-id="11">
+                    <div class="w-col w-col-product">
+                        <img src="img/imgwishlist/sp2.jpg" alt="Dầu Xả Tsubaki chăm sóc tóc 450ml" class="w-thumb" />
+                        <div class="w-prod-info">
+                            <div class="w-prod-brand">TSUBAKI</div>
+                            <a href="#" class="w-prod-name">Dầu Xả Tsubaki chăm sóc tóc 450ml</a>
+                        </div>
+                    </div>
+                    <div class="w-col w-col-date">
+                        <span class="w-date">28/11/2025</span>
+                    </div>
+                    <div class="w-col w-col-status">
+                        <span class="w-status w-status-instock">Còn hàng</span>
+                    </div>
+                    <div class="w-col w-col-price">
+                        <span class="w-price">260.000 đ</span>
+                    </div>
+                    <div class="w-col w-col-actions">
+                        <button class="btn-outline btn-detail">Xem chi tiết</button>
+                        <button class="btn-primary btn-add-cart">Thêm vào giỏ hàng</button>
+                        <button class="btn-icon btn-remove" aria-label="Xóa sản phẩm">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+
+
+                <!-- ITEM 3 -->
+                <div class="wishlist-row" data-id="12">
+                    <div class="w-col w-col-product">
+                        <img src="img/imgwishlist/pd3.jpg" alt="Nước Xịt Dưỡng Tóc Double Rich" class="w-thumb" />
+                        <div class="w-prod-info">
+                            <div class="w-prod-brand">DOUBLE RICH</div>
+                            <a href="#" class="w-prod-name">Nước Xịt Dưỡng Tóc Double Rich Cho Tóc Khô Xơ/ Tóc nhuộm</a>
+                        </div>
+                    </div>
+                    <div class="w-col w-col-date">
+                        <span class="w-date">28/11/2025</span>
+                    </div>
+                    <div class="w-col w-col-status">
+                        <span class="w-status w-status-outstock">Hết hàng</span>
+                    </div>
+                    <div class="w-col w-col-price">
+                        <span class="w-price">73.000 đ</span>
+                    </div>
+                    <div class="w-col w-col-actions">
+                        <button class="btn-outline btn-detail">Xem chi tiết</button>
+                        <button class="btn-primary btn-add-cart" disabled>Thêm vào giỏ hàng</button>
+                        <button class="btn-icon btn-remove" aria-label="Xóa sản phẩm">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+    <!-- HÀNG ICON DỊCH VỤ -->
+    <section class="service-strip">
+        <div class="container service-grid">
+            <div class="service-item">
+                <img src="img/imgwishlist/sb1.png" alt="Thanh toán khi nhận hàng" />
+                <p>THANH TOÁN KHI NHẬN HÀNG</p>
+            </div>
+            <div class="service-item">
+                <img src="img/imgwishlist/sb2.png" alt="Giao nhanh miễn phí" />
+                <p>GIAO HÀNG MIỄN PHÍ</p>
+            </div>
+            <div class="service-item">
+                <img src="img/imgwishlist/sb3.png" alt="30 ngày đổi trả miễn phí" />
+                <p>30 NGÀY ĐỔI TRẢ MIỄN PHÍ</p>
+            </div>
+            <div class="service-item">
+                <img src="img/imgwishlist/sb4.png" alt="Thương hiệu uy tín" />
+                <p>THƯƠNG HIỆU UY TÍN TOÀN CẦU</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- STRIP HOTLINE / CHI NHÁNH -->
+    <section class="cart-bottom-strip">
+        <div class="container bottom-strip-grid">
+            <div class="bottom-box">
+                <p class="bottom-title">HOTLINE CSKH</p>
+                <p class="bottom-main">0343-018-741</p>
+                <p class="bottom-sub">Miễn phí cước gọi</p>
+            </div>
+            <div class="bottom-box">
+                <p class="bottom-title">TÌM CHI NHÁNH</p>
+                <p class="bottom-main">HỆ THỐNG HAIRNOVA</p>
+                <p class="bottom-sub">Xem địa chỉ cửa hàng gần bạn</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- GỢI Ý SẢN PHẨM -->
+    <section class="recommend-section">
+        <div class="container">
+            <!-- TAB HEADER -->
+            <div class="recommend-tabs">
+                <button class="recommend-tab active" data-target="tab-more">Bạn có cần thêm?</button>
+                <button class="recommend-tab" data-target="tab-deal">Deal sốc cho bạn</button>
+                <a href="shop.html#" class="recommend-view-all">Xem Tất Cả &gt;</a>
+            </div>
+
+            <!-- CONTENT -->
+            <div class="recommend-content">
+                <!-- TAB 1: BẠN CÓ CẦN THÊM? -->
+                <div class="recommend-panel active" id="tab-more">
+                    <div class="product-slider">
+                        <button class="slider-arrow prev" type="button">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+
+                        <div class="product-track" id="moreTrack">
+                            <!-- SP 1 -->
+                            <div class="product-card" data-id="1">
+                                <button class="product-wishlist-btn" type="button" aria-label="Yêu thích">
+                                    <i class="fa-regular fa-heart"></i>
+                                </button>
+                                <a href="#" class="product-link">
+                                    <img src="img/imgwishlist/pd1.jpg" alt="Dầu gội Dove Biotin Giảm Gãy Rụng/Collagen Dưỡng Tóc Bồng Bềnh/Ceramide Phục Hồi Hư Tổn" />
+                                    <h4 class="product-name">
+                                        Dầu gội Dove Biotin Giảm Gãy Rụng/Hư Tổn
+                                    </h4>
+                                    <div class="product-price-row">
+                                        <span class="product-price-current">195.000 đ</span>
+                                        <span class="product-price-old">230.000 đ</span>
+                                        <span class="product-discount-badge">-15%</span>
+                                    </div>
+                                    <div class="product-meta-row">
+                                        <span class="product-rating"><span class="star">★</span> 5.0</span>
+                                        <span class="product-sold">Đã bán 120</span>
+                                    </div>
+                                    <div class="product-progress">
+                                        <div class="product-progress-bar" style="--sold-rate: 0.75;"></div>
+                                    </div>
+                                </a>
+                                <div class="product-actions">
+                                    <button class="product-action-btn secondary" type="button">Thêm giỏ hàng</button>
+                                    <button class="product-action-btn primary" type="button">Mua ngay</button>
+                                </div>
+                            </div>
+
+                            <!-- SP 2 -->
+                            <div class="product-card" data-id="2">
+                                <button class="product-wishlist-btn" type="button" aria-label="Yêu thích">
+                                    <i class="fa-regular fa-heart"></i>
+                                </button>
+                                <a href="#" class="product-link">
+                                    <img src="img/imgwishlist/pd2.jpg" alt="Dầu Gội Khô Batiste Dry Shampoo 200ml" />
+                                    <h4 class="product-name">Dầu Gội Khô Batiste Dry Shampoo 200ml</h4>
+                                    <div class="product-price-row">
+                                        <span class="product-price-current">150.000 đ</span>
+                                        <span class="product-price-old">200.000 đ</span>
+                                        <span class="product-discount-badge">-25%</span>
+                                    </div>
+                                    <div class="product-meta-row">
+                                        <span class="product-rating"><span class="star">★</span> 5.0</span>
+                                        <span class="product-sold">Đã bán 86</span>
+                                    </div>
+                                    <div class="product-progress">
+                                        <div class="product-progress-bar" style="--sold-rate: 0.86;"></div>
+                                    </div>
+
+                                </a>
+                                <div class="product-actions">
+                                    <button class="product-action-btn secondary" type="button">Thêm giỏ hàng</button>
+                                    <button class="product-action-btn primary" type="button">Mua ngay</button>
+                                </div>
+                            </div>
+
+                            <!-- SP 3 -->
+                            <div class="product-card" data-id="3">
+                                <button class="product-wishlist-btn" type="button" aria-label="Yêu thích">
+                                    <i class="fa-regular fa-heart"></i>
+                                </button>
+                                <a href="#" class="product-link">
+                                    <img src="img/imgwishlist/pd3.jpg" alt="Dầu Gội Phủ Bạc Kella Nâu Tự Nhiên 150ml" />
+                                    <h4 class="product-name">Dầu Gội Phủ Bạc Kella Nâu Tự Nhiên 150ml</h4>
+                                    <div class="product-price-row">
+                                        <span class="product-price-current">165.000 đ</span>
+                                        <span class="product-price-old">210.000 đ</span>
+                                        <span class="product-discount-badge">-21%</span>
+                                    </div>
+                                    <div class="product-meta-row">
+                                        <span class="product-rating"><span class="star">★</span> 5.0</span>
+                                        <span class="product-sold">Đã bán 62</span>
+                                    </div>
+                                    <div class="product-progress">
+                                        <div class="product-progress-bar" style="--sold-rate: 0.90;"></div>
+                                    </div>
+
+                                </a>
+                                <div class="product-actions">
+                                    <button class="product-action-btn secondary" type="button">Thêm giỏ hàng</button>
+                                    <button class="product-action-btn primary" type="button">Mua ngay</button>
+                                </div>
+                            </div>
+
+                            <!-- SP 4 -->
+                            <div class="product-card" data-id="4">
+                                <button class="product-wishlist-btn" type="button" aria-label="Yêu thích">
+                                    <i class="fa-regular fa-heart"></i>
+                                </button>
+                                <a href="#" class="product-link">
+                                    <img src="img/imgwishlist/pd4.jpg" alt="Nước Dưỡng Tóc Cocoon Tinh Dầu Bưởi 140ml" />
+                                    <h4 class="product-name">Nước Dưỡng Tóc Cocoon Tinh Dầu Bưởi 140ml</h4>
+                                    <div class="product-price-row">
+                                        <span class="product-price-current">110.000 đ</span>
+                                        <span class="product-price-old">139.000 đ</span>
+                                        <span class="product-discount-badge">-21%</span>
+                                    </div>
+                                    <div class="product-meta-row">
+                                        <span class="product-rating"><span class="star">★</span> 5.0</span>
+                                        <span class="product-sold">Đã bán 98</span>
+                                    </div>
+                                    <div class="product-progress">
+                                        <div class="product-progress-bar" style="--sold-rate: 0.95;"></div>
+                                    </div>
+
+                                </a>
+                                <div class="product-actions">
+                                    <button class="product-action-btn secondary" type="button">Thêm giỏ hàng</button>
+                                    <button class="product-action-btn primary" type="button">Mua ngay</button>
+                                </div>
+                            </div>
+
+                            <!-- SP 5 -->
+                            <div class="product-card" data-id="5">
+                                <button class="product-wishlist-btn" type="button" aria-label="Yêu thích">
+                                    <i class="fa-regular fa-heart"></i>
+                                </button>
+                                <a href="#" class="product-link">
+                                    <img src="img/imgwishlist/pd5.jpg" alt="Dầu Gội Phủ Bạc Lavox Health & Live" />
+                                    <h4 class="product-name">Dầu Gội Phủ Bạc Lavox Health &amp; Live</h4>
+                                    <div class="product-price-row">
+                                        <span class="product-price-current">40.000 đ</span>
+                                        <span class="product-price-old">65.000 đ</span>
+                                        <span class="product-discount-badge">-38%</span>
+                                    </div>
+                                    <div class="product-meta-row">
+                                        <span class="product-rating"><span class="star">★</span> 5.0</span>
+                                        <span class="product-sold">Đã bán 150</span>
+                                    </div>
+                                    <div class="product-progress">
+                                        <div class="product-progress-bar" style="--sold-rate: 0.98;"></div>
+                                    </div>
+
+                                </a>
+                                <div class="product-actions">
+                                    <button class="product-action-btn secondary" type="button">Thêm giỏ hàng</button>
+                                    <button class="product-action-btn primary" type="button">Mua ngay</button>
+                                </div>
+                            </div>
+
+                            <!-- SP 6 -->
+                            <div class="product-card" data-id="6">
+                                <button class="product-wishlist-btn" type="button" aria-label="Yêu thích">
+                                    <i class="fa-regular fa-heart"></i>
+                                </button>
+                                <a href="#" class="product-link">
+                                    <img src="img/imgwishlist/pd6.jpg" alt="Dầu Gội Giảm Rụng Tóc L’Oreal Full Resist Purifying Shp 440Ml" />
+                                    <h4 class="product-name">Dầu Gội L’Oreal Full Resist Purifying Shp</h4>
+                                    <div class="product-price-row">
+                                        <span class="product-price-current">225.000 đ</span>
+                                        <span class="product-price-old">289.000 đ</span>
+                                        <span class="product-discount-badge">-22%</span>
+                                    </div>
+                                    <div class="product-meta-row">
+                                        <span class="product-rating"><span class="star">★</span> 5.0</span>
+                                        <span class="product-sold">Đã bán 77</span>
+                                    </div>
+                                    <div class="product-progress">
+                                        <div class="product-progress-bar" style="--sold-rate: 0.55;"></div>
+                                    </div>
+
+                                </a>
+                                <div class="product-actions">
+                                    <button class="product-action-btn secondary" type="button">Thêm giỏ hàng</button>
+                                    <button class="product-action-btn primary" type="button">Mua ngay</button>
+                                </div>
+                            </div>
+
+                            <!-- SP 7 -->
+                            <div class="product-card" data-id="7">
+                                <button class="product-wishlist-btn" type="button" aria-label="Yêu thích">
+                                    <i class="fa-regular fa-heart"></i>
+                                </button>
+                                <a href="#" class="product-link">
+                                    <img src="img/imgwishlist/pd7.jpg" alt="Dầu Gội Bảo Vệ Màu Tóc L’Oreal 280ml" />
+                                    <h4 class="product-name">Dầu Gội Bảo Vệ Màu Tóc L’Oreal 280ml</h4>
+                                    <div class="product-price-row">
+                                        <span class="product-price-current">130.000 đ</span>
+                                        <span class="product-price-old">165.000 đ</span>
+                                        <span class="product-discount-badge">-21%</span>
+                                    </div>
+                                    <div class="product-meta-row">
+                                        <span class="product-rating"><span class="star">★</span> 5.0</span>
+                                        <span class="product-sold">Đã bán 54</span>
+                                    </div>
+                                    <div class="product-progress">
+                                        <div class="product-progress-bar" style="--sold-rate: 0.40;"></div>
+                                    </div>
+
+                                </a>
+                                <div class="product-actions">
+                                    <button class="product-action-btn secondary" type="button">Thêm giỏ hàng</button>
+                                    <button class="product-action-btn primary" type="button">Mua ngay</button>
+                                </div>
+                            </div>
+
+                            <!-- SP 8 -->
+                            <div class="product-card" data-id="8">
+                                <button class="product-wishlist-btn" type="button" aria-label="Yêu thích">
+                                    <i class="fa-regular fa-heart"></i>
+                                </button>
+                                <a href="#" class="product-link">
+                                    <img src="img/imgwishlist/pd8.jpg" alt="Dầu Gội TRESemmé Detox Tóc Chắc Khỏe & Sạch Sâu Salon Detox Shampoo" />
+                                    <h4 class="product-name">Dầu Gội TRESemmé Detox Tóc Chắc Khỏe</h4>
+                                    <div class="product-price-row">
+                                        <span class="product-price-current">300.000 đ</span>
+                                        <span class="product-price-old">389.000 đ</span>
+                                        <span class="product-discount-badge">-23%</span>
+                                    </div>
+                                    <div class="product-meta-row">
+                                        <span class="product-rating"><span class="star">★</span> 5.0</span>
+                                        <span class="product-sold">Đã bán 39</span>
+                                    </div>
+                                    <div class="product-progress">
+                                        <div class="product-progress-bar" style="--sold-rate: 0.30;"></div>
+                                    </div>
+
+                                </a>
+                                <div class="product-actions">
+                                    <button class="product-action-btn secondary" type="button">Thêm vào giỏ hàng</button>
+                                    <button class="product-action-btn primary" type="button">Mua ngay</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="slider-arrow next" type="button">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 2: DEAL SỐC -->
+                <div class="recommend-panel" id="tab-deal">
+                    <div class="deal-banner-grid">
+                        <!-- Banner bn1 – chữ nhật lớn giữa -->
+                        <a href="wishlist.html" class="deal-banner big">
+                            <img src="img/imgwishlist/bn1.png" alt="Deal sốc tại HairNova" />
+                        </a>
+
+                        <!-- Banner bn2 -->
+                        <a href="wishlist.html" class="deal-banner">
+                            <img src="img/imgwishlist/bn2.png" alt="Giảm giá 30%" />
+                        </a>
+
+                        <!-- Banner bn3 -->
+                        <a href="wishlist.html" class="deal-banner">
+                            <img src="img/imgwishlist/bn3.png" alt="Mua 2 tặng 1" />
+                        </a>
+
+                        <!-- Banner bn4 -->
+                        <a href="wishlist.html" class="deal-banner">
+                            <img src="img/imgwishlist/bn4.png" alt="Ưu đãi Noel" />
+                        </a>
+
+                        <!-- Banner bn5 -->
+                        <a href="wishlist.html" class="deal-banner">
+                            <img src="img/imgwishlist/bn5.png" alt="Miễn phí vận chuyển" />
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+    <footer class="footer-verb-style">
+
+        <div class="container pt-5 pb-4">
+            <div class="row">
+
+                <div class="col-lg-4 col-md-12 mb-5 mb-lg-0">
+                    <h2 class="footer-heading mb-3">Kết nối với HairNova</h2>
+                    <div class="footer-message-box">
+                        <p>"Vẻ đẹp thực sự bắt nguồn từ sự thấu hiểu và trân trọng bản thân. Hãy để HairNova đồng hành cùng mái tóc bạn."</p>
+                    </div>
+                    <div class="footer-socials mt-4">
+                        <a href="#" class="social-circle"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" class="social-circle"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-circle"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-circle"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-lg-8 col-md-12">
+                    <div class="row">
+                        <div class="col-md-4 col-6 mb-4">
+                            <h5 class="link-heading">Cửa hàng</h5>
+                            <ul class="footer-links">
+                                <li><a href="#">Dầu gội</a></li>
+                                <li><a href="#">Dầu xả</a></li>
+                                <li><a href="#">Dầu dưỡng</a></li>
+                                <li><a href="#">Thuốc nhuộm</a></li>
+
+                            </ul>
+                        </div>
+                        <div class="col-md-4 col-6 mb-4">
+                            <h5 class="link-heading">Hỗ trợ</h5>
+                            <ul class="footer-links">
+                                <li><a href="#">Chính sách thanh toán</a></li>
+                                <li><a href="#">Chính sách bảo hành và đổi trả</a></li>
+                                <li><a href="#">Chính sách bảo mật</a></li>
+                                <li><a href="#">Chính sách vận chuyển</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4 col-6 mb-4">
+                            <h5 class="link-heading">Liên hệ</h5>
+                            <ul class="footer-links">
+                                <li><a href="#">🗺️ 279 Nguyễn Tri Phương, Quận 10</a></li>
+                                <li><a href="#">📞 0387 211 431</a></li>
+                                <li><a href="#">📩 hairnova@gmail.com</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="waves-container">
+            <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                 viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+                <defs>
+                    <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+                </defs>
+                <g class="parallax">
+                    <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(0, 75, 176, 0.3)" />
+                    <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(0, 75, 176, 0.5)" />
+                    <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(0, 75, 176, 0.7)" />
+                    <use xlink:href="#gentle-wave" x="48" y="7" fill="var(--bs-primary-dark)" />
+                </g>
+            </svg>
+        </div>
+
+        <div class="footer-bottom-dark">
+            <div class="container text-center">
+
+                <div class="big-brand-box">
+                    <img src="img/imgwishlist/lOGO4.png" alt="HairNova Logo" class="footer-brand-img">
+                </div>
+
+                <div class="copyright-text mt-4">
+                    &copy; 2025 HAIRNOVA VIETNAM | ALL RIGHTS RESERVED
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/wishlist.js"></script>
+</body>
+</html>
