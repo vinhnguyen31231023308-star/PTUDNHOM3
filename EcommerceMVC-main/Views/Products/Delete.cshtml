@@ -5,9 +5,9 @@
 
 <h3>Are you sure you want to delete the product: <strong>@Model.Name</strong>?</h3>
 
-@if (!string.IsNullOrEmpty(Model.ImagePath)) {
+@if (!string.IsNullOrEmpty(Model.MainImagePath)) {
     <div>
-        <img src="@Model.ImagePath" alt="Product Image" width="150" height="150" />
+        <img src="@Model.MainImagePath" alt="Product Image" width="150" height="150" />
     </div>
 }
 

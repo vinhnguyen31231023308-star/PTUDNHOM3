@@ -1,23 +1,22 @@
-using EcommerceMVC.Models;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-public class Cart
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace EcommerceMVC.Models
 {
-    public int CartId { get; set; }  // Primary Key
+    public class Cart
+    {
+        [Key]
+        public long CartId { get; set; }
 
-    public string UserId { get; set; }
+        // User sở hữu giỏ hàng
+        [Required]
+        public string UserId { get; set; } = string.Empty;
+        public ApplicationUser? User { get; set; }
 
-    public ApplicationUser User { get; set; }
-
-
-    public List<CartItem> CartItems { get; set; } = new List<CartItem>();
-
-        // Navigation property for user
-        
-        // Timestamp for when the cart was last modified
         public DateTime LastModified { get; set; } = DateTime.UtcNow;
-        
-        // Timestamp for when the last reminder was sent (for abandoned carts)
+
         public DateTime? LastReminderSent { get; set; }
+
+        // Quan hệ 1-n với CartItem
+        public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
+    }
 }

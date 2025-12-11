@@ -44,7 +44,7 @@ namespace EcommerceMVC.Controllers
                 Addresses = addresses,
                 PaymentMethods = paymentMethods,
                 NewAddress = new Address(),
-                NewPaymentMethod = new PaymentMethod(),
+                NewPaymentMethod = new Payment(),
                 PasswordModel = new ChangePasswordViewModel()
             };
 
@@ -183,7 +183,7 @@ public async Task<IActionResult> DeletePaymentMethod(int id)
                 PaymentMethods = paymentMethods,
                 Addresses = addresses,
                 NewAddress = new Address(),
-                NewPaymentMethod = new PaymentMethod()
+                NewPaymentMethod = new Payment()
             };
 
             return View("Index", model);

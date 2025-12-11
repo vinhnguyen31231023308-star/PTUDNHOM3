@@ -8,7 +8,7 @@
 
 <form asp-action="Edit" method="post" enctype="multipart/form-data">
     <input type="hidden" asp-for="ProductId" />
-    <input type="hidden" asp-for="ImagePath" />
+    <input type="hidden" asp-for="MainImagePath" />
 
     <div class="form-group">
         <label asp-for="Name"></label>
@@ -38,11 +38,11 @@
         <label asp-for="ImageFile">Change Product Image (Optional)</label>
         <input asp-for="ImageFile" type="file" class="form-control" />
         <span asp-validation-for="ImageFile" class="text-danger"></span>
-        @if (!string.IsNullOrEmpty(Model.ImagePath))
+        @if (!string.IsNullOrEmpty(Model.MainImagePath))
         {
             <div class="mt-2">
                 <p class="text-info">Current image will be kept if no new image is uploaded</p>
-                <img src="@Model.ImagePath" alt="Current Image" width="100" height="100" style="object-fit: cover;" />
+                <img src="@Model.MainImagePath" alt="Current Image" width="100" height="100" style="object-fit: cover;" />
             </div>
         }
     </div>

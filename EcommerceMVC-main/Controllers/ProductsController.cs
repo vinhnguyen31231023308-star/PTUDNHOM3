@@ -28,19 +28,21 @@ namespace EcommerceMVC.Controllers
         {
             var products = await _context.Products
                 .Include(p => p.Category)
+                .Include(p => p.ProductImages) // d? dùng MainImagePath
                 .ToListAsync();
 
             return View(products);
         }
 
         // GET: Products/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(long? id)
         {
             if (id == null)
                 return NotFound();
 
             var product = await _context.Products
                 .Include(p => p.Category)
+                .Include(p => p.ProductImages)
                 .FirstOrDefaultAsync(m => m.ProductId == id);
 
             if (product == null)
@@ -69,13 +71,21 @@ namespace EcommerceMVC.Controllers
                 string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images");
                 Directory.CreateDirectory(uploadsFolder);
 
-                string uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(product.ImageFile.FileName);
+                string uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(product.ImageFile!.FileName);
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                     await product.ImageFile.CopyToAsync(stream);
 
-                product.ImagePath = "/images/" + uniqueFileName;
+                // T?o b?n ghi ProductImage (HinhAnhSanPham)
+                var mainImage = new ProductImage
+                {
+                    ImageUrl = "/images/" + uniqueFileName,
+                    IsMain = true,
+                    DisplayOrder = 1
+                };
+
+                product.ProductImages.Add(mainImage);
 
                 _context.Add(product);
                 await _context.SaveChangesAsync();
@@ -87,12 +97,15 @@ namespace EcommerceMVC.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(long? id)
         {
             if (id == null)
                 return NotFound();
 
-            var product = await _context.Products.FindAsync(id);
+            var product = await _context.Products
+                .Include(p => p.ProductImages)
+                .FirstOrDefaultAsync(p => p.ProductId == id);
+
             if (product == null)
                 return NotFound();
 
@@ -103,15 +116,28 @@ namespace EcommerceMVC.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int id, Product product)
+        public async Task<IActionResult> Edit(long id, Product product)
         {
             if (id != product.ProductId)
                 return NotFound();
 
-            var existingProduct = await _context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.ProductId == id);
+            var existingProduct = await _context.Products
+                .Include(p => p.ProductImages)
+                .FirstOrDefaultAsync(p => p.ProductId == id);
+
             if (existingProduct == null)
                 return NotFound();
 
+            // C?p nh?t các field co b?n
+            existingProduct.Name = product.Name;
+            existingProduct.Slug = product.Slug;
+            existingProduct.Sku = product.Sku;
+            existingProduct.ShortDescription = product.ShortDescription;
+            existingProduct.Description = product.Description;
+            existingProduct.CategoryId = product.CategoryId;
+            existingProduct.UpdatedAt = DateTime.Now;
+
+            // N?u upload ?nh m?i -> thay ?nh chính
             if (product.ImageFile != null && product.ImageFile.Length > 0)
             {
                 string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images");
@@ -123,18 +149,27 @@ namespace EcommerceMVC.Controllers
                 using (var stream = new FileStream(filePath, FileMode.Create))
                     await product.ImageFile.CopyToAsync(stream);
 
-                product.ImagePath = "/images/" + uniqueFileName;
-            }
-            else
-            {
-                product.ImagePath = existingProduct.ImagePath;
+                var mainImage = existingProduct.ProductImages
+                    .FirstOrDefault(i => i.IsMain == true) ?? existingProduct.ProductImages.FirstOrDefault();
+
+                if (mainImage == null)
+                {
+                    mainImage = new ProductImage
+                    {
+                        ProductId = existingProduct.ProductId,
+                        IsMain = true,
+                        DisplayOrder = 1
+                    };
+                    _context.ProductImages.Add(mainImage);
+                }
+
+                mainImage.ImageUrl = "/images/" + uniqueFileName;
             }
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(product);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
                 }
@@ -146,18 +181,19 @@ namespace EcommerceMVC.Controllers
                 }
             }
 
-            ViewBag.Categories = new SelectList(_context.Categories, "CategoryId", "Name", product.CategoryId);
-            return View(product);
+            ViewBag.Categories = new SelectList(_context.Categories, "CategoryId", "Name", existingProduct.CategoryId);
+            return View(existingProduct);
         }
 
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(long? id)
         {
             if (id == null)
                 return NotFound();
 
             var product = await _context.Products
                 .Include(p => p.Category)
+                .Include(p => p.ProductImages)
                 .FirstOrDefaultAsync(p => p.ProductId == id);
 
             if (product == null)
@@ -169,11 +205,18 @@ namespace EcommerceMVC.Controllers
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(long id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var product = await _context.Products
+                .Include(p => p.ProductImages)
+                .FirstOrDefaultAsync(p => p.ProductId == id);
+
             if (product != null)
             {
+                // Xoá luôn ?nh
+                if (product.ProductImages.Any())
+                    _context.ProductImages.RemoveRange(product.ProductImages);
+
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
             }

@@ -9,8 +9,8 @@ namespace EcommerceMVC.ViewModels
         public UserProfile Profile { get; set; }
         public List<Address> Addresses { get; set; }
         public Address NewAddress { get; set; } = new Address();
-        public List<PaymentMethod> PaymentMethods { get; set; }
-        public PaymentMethod NewPaymentMethod { get; set; } = new PaymentMethod();
+        public List<Payment> PaymentMethods { get; set; }
+        public Payment NewPaymentMethod { get; set; } = new Payment();
         public ChangePasswordViewModel PasswordModel { get; set; } = new ChangePasswordViewModel();
     }
 
