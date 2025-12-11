@@ -11,11 +11,11 @@ namespace EcommerceMVC.Models
 
         [Column("TenDanhMuc")]
         [MaxLength(100)]
-        public string Name { get; set; } = string.Empty;
+        public string CategoryName { get; set; } = string.Empty;
 
         [Column("TrangThai")]
         public bool? IsActive { get; set; }
 
-        public ICollection<NewsArticle> Articles { get; set; } = new List<NewsArticle>();
+        public ICollection<NewsArticle> NewsArticles { get; set; } = new List<NewsArticle>();
     }
 }

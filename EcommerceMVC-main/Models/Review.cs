@@ -21,7 +21,7 @@ namespace EcommerceMVC.Models
         public long? OrderId { get; set; }
 
         [Column("SoSao")]
-        public int Rating { get; set; }
+        public int? Rating { get; set; }
 
         [Column("TieuDe")]
         [StringLength(100)]

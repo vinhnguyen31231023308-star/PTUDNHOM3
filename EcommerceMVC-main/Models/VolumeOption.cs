@@ -23,10 +23,19 @@ namespace EcommerceMVC.Models
         [Column("GiaBan", TypeName = "decimal(18,2)")]
         public decimal? Price { get; set; }
 
+        [Column("GiaGiam", TypeName = "decimal(18,2)")]
+        public decimal? SalePrice { get; set; }
+
         [Column("SoLuongTon")]
         public int? Stock { get; set; }
 
         [Column("DaBan")]
         public int? Sold { get; set; }
+
+        // ================== THUỘC TÍNH TÍNH TOÁN (Tùy chọn) ==================
+
+        // Giá đang được bán (Ưu tiên SalePrice nếu có)
+        [NotMapped]
+        public decimal? CurrentPrice => SalePrice.HasValue ? SalePrice : Price;
     }
 }

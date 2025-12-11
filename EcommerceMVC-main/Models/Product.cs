@@ -117,24 +117,68 @@ namespace EcommerceMVC.Models
             ProductImages?.FirstOrDefault(i => i.IsMain == true)?.ImageUrl
             ?? ProductImages?.FirstOrDefault()?.ImageUrl;
 
-        // ================== GIÁ “ẢO” CHO CODE CŨ ==================
+        // ================== THUỘC TÍNH TÍNH TOÁN ==================
+
+        // 1. ĐIỂM ĐÁNH GIÁ TRUNG BÌNH (Giải quyết lỗi CS1061)
+        [NotMapped]
+        public double AverageRating
+        {
+            get
+            {
+                // Đảm bảo Reviews đã được load và có ít nhất 1 Rating có giá trị
+                if (Reviews == null || !Reviews.Any() || !Reviews.Any(r => r.Rating.HasValue))
+                {
+                    return 0;
+                }
+
+                // Tính trung bình trên các giá trị Rating hợp lệ
+                return Reviews.Where(r => r.Rating.HasValue).Average(r => (double)r.Rating!.Value);
+            }
+        }
+
+        // 2. GIÁ GỐC THẤP NHẤT (Giá bán thấp nhất của tùy chọn dung tích)
+        // Đây là giá mặc định không nullable, trả về 0m nếu không có dung tích.
         [NotMapped]
         public decimal Price
         {
             get
             {
-                // Lấy giá bán của dung tích đầu tiên (hoặc thấp nhất) làm giá mặc định
-                var option = VolumeOptions?
-                    .OrderBy(v => v.Price)     // có thể đổi logic nếu muốn
+                // Lấy giá bán thấp nhất (GiaBan) từ VolumeOptions
+                var minPriceOption = VolumeOptions?
+                    .Where(v => v.Price.HasValue)
+                    .OrderBy(v => v.Price)
                     .FirstOrDefault();
 
-                return option?.Price ?? 0m;
+                // Trả về Price (decimal?) nếu có, nếu không thì 0m
+                return minPriceOption?.Price ?? 0m;
             }
         }
 
-        // ================== SỐ LƯỢNG ẢO CHO CODE CŨ ==================
+        // 3. GIÁ ĐANG ÁP DỤNG (Giá sau chiết khấu hoặc khuyến mãi)
+        // Đây là giá hiển thị trên giao diện, ưu tiên giá khuyến mãi nếu có.
+        [NotMapped]
+        public decimal? DiscountedPrice
+        {
+            get
+            {
+                // Lấy tùy chọn dung tích có giá thấp nhất
+                var option = VolumeOptions?
+                    .Where(v => v.Price.HasValue)
+                    .OrderBy(v => v.Price)
+                    .FirstOrDefault();
 
-        // Tổng số lượng tồn của *tất cả* dung tích
+                // Nếu option.SalePrice có giá trị và nhỏ hơn Price gốc, sử dụng SalePrice             
+                if (option != null && option.SalePrice.HasValue && option.SalePrice.Value < (option.Price ?? decimal.MaxValue))
+                {
+                    return option.SalePrice;
+                }
+
+                // Nếu không có SalePrice hoặc SalePrice lớn hơn giá gốc, không có chiết khấu/khuyến mãi cố định.
+                return null;
+            }
+        }
+
+        // 4. SỐ LƯỢNG TỒN TỔNG (Giữ nguyên)
         [NotMapped]
         public int Quantity
             => VolumeOptions?.Sum(v => v.Stock ?? 0) ?? 0;

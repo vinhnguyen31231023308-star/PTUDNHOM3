@@ -28,7 +28,7 @@ namespace EcommerceMVC.Controllers
         //   - Chuẩn bị dữ liệu cho từng section trên file Views/Home/Index.cshtml
         //   - Không xử lý logic phức tạp, chỉ query mức cơ bản để tránh lỗi.
         // --------------------------------------------------------------------
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(List<NewsArticle> newsArticles)
         {
             var vm = new HomeViewModel();
 
@@ -91,7 +91,7 @@ namespace EcommerceMVC.Controllers
             vm.NewArrivalProducts = await _context.Products
                 .Include(p => p.ProductImages)
                 .OrderByDescending(p => p.CreatedAt)
-                .Take(9)
+                .Take(6)
                 .ToListAsync();
 
             // ================================================================
@@ -110,10 +110,11 @@ namespace EcommerceMVC.Controllers
             // 7. NEWS / BLOG – Tin tức & bài viết
             //    - Map với section .news-section (1 bài lớn + 2 bài nhỏ).
             // ================================================================
-            vm.LatestNews = await _context.NewsArticles
-                .OrderByDescending(n => n.PublishedAt) 
-                .Take(3)
+            List<NewsArticle> NewsArticles = await _context.NewsArticles
+                .OrderByDescending(n => n.PublishedAt)
+                .Take(5)
                 .ToListAsync();
+            vm.LatestNews = NewsArticles;
 
             // ================================================================
             // 8. CATEGORY SECTION – “Khám phá theo nhu cầu”

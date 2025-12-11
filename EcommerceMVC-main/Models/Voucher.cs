@@ -49,5 +49,23 @@ namespace EcommerceMVC.Models
         public bool? IsActive { get; set; }
 
         public ICollection<Order> Orders { get; set; } = new List<Order>();
+
+        // Bổ sung: Thuộc tính kiểm tra tính khả dụng (NotMapped)
+        [NotMapped]
+        public bool IsAvailable
+        {
+            get
+            {
+                // 1. Phải đang hoạt động (IsActive)
+                // 2. Chưa hết số lượng (Quantity > UsedQuantity)
+                // 3. Đang trong thời gian áp dụng (StartDate <= Now <= EndDate)
+
+                bool isQuantityRemaining = Quantity > UsedQuantity;
+                bool isTimeValid = StartDate.HasValue && StartDate.Value <= DateTime.Now &&
+                                   (!EndDate.HasValue || EndDate.Value >= DateTime.Now);
+
+                return (IsActive ?? false) && isQuantityRemaining && isTimeValid;
+            }
+        }
     }
 }
