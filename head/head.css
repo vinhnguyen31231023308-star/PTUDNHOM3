@@ -1,0 +1,302 @@
+﻿:root {
+    --bs-primary: #0061E1;
+    --bs-primary-dark: #004bb0;
+    --bs-secondary: #ffb524;
+    --bs-light-bg: #f4f8ff;
+    --bs-light-blue: #e0f2ff;
+    --text-dark: #1a202c;
+    --text-gray: #64748b;
+    --top-bar-height: 50px;
+    --header-height: 80px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #fff;
+    color: var(--text-gray);
+    font-family: "Roboto", sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+    position: relative;
+    height: 150vh;
+}
+
+/* --- TOP BAR --- */
+.top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--top-bar-height);
+    background-color: var(--bs-primary-dark);
+    color: white;
+    z-index: 1002;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.marquee-content {
+    display: inline-block;
+    padding-left: 100%;
+    animation: marquee 25s linear infinite;
+}
+
+    .marquee-content span {
+        margin-right: 50px;
+    }
+
+@keyframes marquee {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    100% {
+        transform: translate(-100%, 0);
+    }
+}
+
+/* --- HEADER --- */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5%;
+    position: fixed;
+    top: var(--top-bar-height);
+    left: 0;
+    width: 100%;
+    height: var(--header-height);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 900;
+    border-bottom: 2px solid var(--bs-light-bg);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+}
+
+.logo {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+/* --- NAV & DROPDOWN --- */
+nav {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+}
+
+    nav ul {
+        display: flex;
+        list-style: none;
+        gap: 30px;
+        margin: 0;
+        padding: 0;
+        align-items: center;
+    }
+
+    nav a {
+        text-decoration: none;
+        color: var(--text-gray);
+        font-weight: 600;
+        padding: 25px 0;
+        display: inline-block;
+        transition: 0.3s;
+    }
+
+        nav a:hover, nav a.active {
+            color: var(--bs-primary);
+        }
+
+.nav-item-dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: -20px;
+    background: #ffffff;
+    min-width: 220px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border-radius: 0 0 8px 8px;
+    padding: 10px 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    display: block !important;
+    border-top: 3px solid var(--bs-primary);
+}
+
+    .dropdown-menu li {
+        display: block;
+        width: 100%;
+    }
+
+    .dropdown-menu a {
+        display: block;
+        padding: 12px 25px;
+        color: var(--text-gray);
+    }
+
+        .dropdown-menu a:hover {
+            background-color: var(--bs-light-bg);
+            color: var(--bs-primary);
+            padding-left: 30px;
+        }
+
+.nav-item-dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* --- ICONS --- */
+.header-actions {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    align-items: center;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    color: var(--text-dark);
+    position: relative;
+}
+
+    .icon-btn:hover {
+        background-color: var(--bs-light-blue);
+        color: var(--bs-primary);
+        transform: translateY(-2px);
+    }
+
+    .icon-btn svg {
+        width: 24px;
+        height: 24px;
+        stroke-width: 2;
+    }
+
+.badge-count {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    background: var(--bs-primary);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid white;
+}
+
+.cart-badge {
+    background: var(--bs-secondary);
+    color: var(--text-dark);
+}
+
+/* --- SEARCH OVERLAY (FIXED ON TOP) --- */
+.search-overlay {
+    position: fixed; /* Ghim chặt lên màn hình */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 140px; /* Chiều cao */
+    background-color: #ffffff;
+    z-index: 9999; /* Đè lên tất cả */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Ẩn mặc định */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-100%);
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+    .search-overlay.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+.search-box-content {
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.search-input-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 5px;
+    margin: 0 20px;
+}
+
+.search-icon-input {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-right: 15px;
+}
+
+.search-overlay input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    color: var(--text-dark);
+    background: transparent;
+}
+
+.close-search {
+    width: 40px;
+    height: 40px;
+    background: #f8f9fa;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 50%;
+}
+
+    .close-search:hover {
+        background: #fee;
+        color: #e74c3c;
+    }
+
+.btn-search-submit {
+    padding: 10px 25px;
+    background: var(--bs-primary);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+}
