@@ -27,6 +27,8 @@ public class User
 
     public bool IsEmailVerified { get; set; } = false;
 
+    public Role Role { get; set; } = Role.User;
+
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public DateTime? LastLoginAt { get; set; }

@@ -87,6 +87,8 @@
                 var userId = Context.Session.GetString("UserId");
                 var username = Context.Session.GetString("Username");
                 var fullName = Context.Session.GetString("FullName");
+                var role = Context.Session.GetString("Role");
+                var isAdmin = !string.IsNullOrEmpty(role) && role == "Admin";
             }
             <div class="user-dropdown">
                 <button class="icon-btn" title="Tài khoản" id="userBtn">
@@ -96,6 +98,11 @@
                     @if (!string.IsNullOrEmpty(userId))
                     {
                         <li><a href="#"><strong>@fullName</strong></a></li>
+                        @if (isAdmin)
+                        {
+                            <li><hr style="margin: 8px 0; border: none; border-top: 1px solid #eee;"></li>
+                            <li><a asp-controller="Admin" asp-action="Index"><strong style="color: #dc3545;">🔐 Quản trị</strong></a></li>
+                        }
                         <li><a href="#">Thông tin tài khoản</a></li>
                         <li><a href="#">Đơn hàng của tôi</a></li>
                         <li><hr style="margin: 8px 0; border: none; border-top: 1px solid #eee;"></li>

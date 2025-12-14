@@ -56,6 +56,7 @@ public class AccountController : Controller
         HttpContext.Session.SetString("UserId", user.Id.ToString());
         HttpContext.Session.SetString("Username", user.Username);
         HttpContext.Session.SetString("FullName", user.FullName);
+        HttpContext.Session.SetString("Role", user.Role.ToString());
 
         // Update last login
         user.LastLoginAt = DateTime.Now;
@@ -349,6 +350,7 @@ public class AccountController : Controller
                 FullName = fullName,
                 PasswordHash = HashPassword(password),
                 IsEmailVerified = true,
+                Role = Role.User, // Mặc định là User
                 CreatedAt = DateTime.Now
             };
 
