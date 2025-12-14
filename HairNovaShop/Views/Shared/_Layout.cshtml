@@ -83,9 +83,31 @@
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
                 <span class="badge-count cart-badge">3</span>
             </button>
-            <button class="icon-btn" title="Tài khoản">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-            </button>
+            @{
+                var userId = Context.Session.GetString("UserId");
+                var username = Context.Session.GetString("Username");
+                var fullName = Context.Session.GetString("FullName");
+            }
+            <div class="user-dropdown">
+                <button class="icon-btn" title="Tài khoản" id="userBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                </button>
+                <ul class="user-dropdown-menu" id="userDropdownMenu">
+                    @if (!string.IsNullOrEmpty(userId))
+                    {
+                        <li><a href="#"><strong>@fullName</strong></a></li>
+                        <li><a href="#">Thông tin tài khoản</a></li>
+                        <li><a href="#">Đơn hàng của tôi</a></li>
+                        <li><hr style="margin: 8px 0; border: none; border-top: 1px solid #eee;"></li>
+                        <li><a asp-controller="Account" asp-action="Logout">Đăng xuất</a></li>
+                    }
+                    else
+                    {
+                        <li><a asp-controller="Account" asp-action="Login">Đăng nhập</a></li>
+                        <li><a asp-controller="Account" asp-action="Register">Đăng ký</a></li>
+                    }
+                </ul>
+            </div>
         </div>
     </header>
 

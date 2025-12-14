@@ -143,19 +143,8 @@
                     <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                 </div>
 
-                @if (TempData["Email"] != null)
-                {
-                    <div class="auth-input-group">
-                        <label asp-for="OTPCode">Mã OTP</label>
-                        <div class="auth-input-wrapper">
-                            <input type="text" asp-for="OTPCode" placeholder="Nhập mã OTP" required />
-                        </div>
-                        <span asp-validation-for="OTPCode" class="text-danger"></span>
-                    </div>
-                }
-
                 <button type="submit" class="auth-btn">
-                    @(TempData["Email"] != null ? "Xác nhận OTP" : "Tạo tài khoản")
+                    Tạo tài khoản
                 </button>
 
                 <div class="auth-footer" style="margin-top: 16px;">

@@ -1,0 +1,170 @@
+@model HairNovaShop.Models.VerifyOTPViewModel
+@{
+    ViewData["Title"] = Model.Type == HairNovaShop.Models.OTPType.Registration ? "Xác thực đăng ký" : "Xác thực đặt lại mật khẩu";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <title>@ViewData["Title"] - HairNovaShop</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="~/css/head.css" />
+    <link rel="stylesheet" href="~/css/account.css" />
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="marquee-content">
+            <span>⚡️ GIẢM GIÁ SỐC 20% TOÀN BỘ SẢN PHẨM — HÀNG MỚI VỀ — MIỄN PHÍ VẬN CHUYỂN CHO ĐƠN TỪ 59K ⚡️ CHÀO MỪNG BẠN ĐẾN VỚI HAIRNOVA ⚡️</span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <a class="logo" asp-area="" asp-controller="Home" asp-action="Index">
+            <img src="~/images/logo.png" alt="Logo HairNova" style="width: 180px; height: auto;">
+        </a>
+        <nav>
+            <ul>
+                <li><a asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li><a href="#">Cửa hàng</a></li>
+                <li><a href="#">Tin tức</a></li>
+                <li><a href="#">Giới thiệu</a></li>
+                <li><a href="#">Liên hệ</a></li>
+                <li><a href="#">Chính sách</a></li>
+            </ul>
+        </nav>
+        <div class="header-actions">
+            <a href="#" class="icon-btn" title="Tìm kiếm">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </a>
+            <a href="#" class="icon-btn" title="Yêu thích">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+            </a>
+            <a href="#" class="icon-btn" title="Giỏ hàng">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+            </a>
+            <a asp-controller="Account" asp-action="Login" class="icon-btn" title="Tài khoản">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <!-- Nền bong bóng -->
+    <div class="bg-bubbles">
+        <span class="bubble b1"></span>
+        <span class="bubble b2"></span>
+        <span class="bubble b3"></span>
+        <span class="bubble b4"></span>
+        <span class="bubble b5"></span>
+        <span class="bubble b6"></span>
+    </div>
+
+    <!-- CARD XÁC THỰC OTP -->
+    <div class="auth-wrapper">
+        <div class="auth-card auth-card-login">
+            <h1 class="auth-title">@(Model.Type == HairNovaShop.Models.OTPType.Registration ? "Xác thực đăng ký" : "Đặt lại mật khẩu")</h1>
+
+            <p class="forgot-desc">
+                Mã OTP đã được gửi đến email <strong>@Model.Email</strong><br>
+                Vui lòng nhập mã OTP để @(Model.Type == HairNovaShop.Models.OTPType.Registration ? "hoàn tất đăng ký" : "đặt lại mật khẩu").
+            </p>
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <form class="auth-form" asp-action="VerifyOTP" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <input type="hidden" asp-for="Email" />
+                <input type="hidden" asp-for="Type" />
+                @if (Model.Type == HairNovaShop.Models.OTPType.Registration)
+                {
+                    <input type="hidden" asp-for="FullName" />
+                    <input type="hidden" asp-for="Phone" />
+                    <input type="hidden" asp-for="Password" />
+                    <input type="hidden" asp-for="ConfirmPassword" />
+                }
+
+                <div class="auth-input-group">
+                    <label asp-for="OTPCode">Mã OTP</label>
+                    <div class="auth-input-wrapper">
+                        <input type="text" asp-for="OTPCode" placeholder="Nhập mã OTP (6 chữ số)" maxlength="6" required style="text-align: center; letter-spacing: 8px; font-size: 20px; font-weight: bold;" id="otpInput" pattern="[0-9]{6}" />
+                    </div>
+                    <span asp-validation-for="OTPCode" class="text-danger"></span>
+                </div>
+
+                @if (Model.Type == HairNovaShop.Models.OTPType.ForgotPassword)
+                {
+                    <div class="auth-input-group">
+                        <label asp-for="NewPassword">Mật khẩu mới</label>
+                        <div class="auth-input-wrapper">
+                            <input type="password" asp-for="NewPassword" placeholder="Nhập mật khẩu mới" required />
+                        </div>
+                        <span asp-validation-for="NewPassword" class="text-danger"></span>
+                    </div>
+
+                    <div class="auth-input-group">
+                        <label asp-for="ConfirmNewPassword">Xác nhận mật khẩu mới</label>
+                        <div class="auth-input-wrapper">
+                            <input type="password" asp-for="ConfirmNewPassword" placeholder="Nhập lại mật khẩu mới" required />
+                        </div>
+                        <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
+                    </div>
+                }
+
+                <button type="submit" class="auth-btn">
+                    @(Model.Type == HairNovaShop.Models.OTPType.Registration ? "Xác thực và đăng ký" : "Xác thực và đặt lại mật khẩu")
+                </button>
+
+                <div class="auth-footer">
+                    <span>Chưa nhận được mã?</span>
+                    <a href="javascript:void(0)" id="resendOTP" class="auth-link-highlight">Gửi lại mã OTP</a>
+                </div>
+
+                <div class="auth-footer">
+                    <a asp-action="@(Model.Type == HairNovaShop.Models.OTPType.Registration ? "Register" : "ForgotPassword")" class="auth-link">Quay lại</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Auto focus vào input OTP
+            const otpInput = document.getElementById('otpInput');
+            if (otpInput) {
+                otpInput.focus();
+                // Chỉ cho phép nhập số
+                otpInput.addEventListener('input', function(e) {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                });
+            }
+
+            // Resend OTP
+            document.getElementById('resendOTP')?.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (confirm('Bạn có muốn gửi lại mã OTP không?')) {
+                    var url = '@Url.Action("ResendOTP", "Account")' + '?email=@Model.Email&type=@Model.Type';
+                    window.location.href = url;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

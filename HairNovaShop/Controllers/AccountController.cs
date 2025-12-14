@@ -5,6 +5,7 @@ using HairNovaShop.Models;
 using HairNovaShop.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 
 namespace HairNovaShop.Controllers;
 
@@ -173,16 +174,19 @@ public class AccountController : Controller
         try
         {
             await _emailService.SendOTPEmailAsync(model.Email, otpCode, OTPType.Registration);
-            TempData["Success"] = $"Mã OTP đã được gửi đến email {model.Email}. Vui lòng kiểm tra và nhập mã OTP.";
-            TempData["Email"] = model.Email;
+            // Lưu thông tin vào session để dùng khi verify OTP
+            HttpContext.Session.SetString("Register_Email", model.Email);
+            HttpContext.Session.SetString("Register_FullName", model.FullName);
+            HttpContext.Session.SetString("Register_Phone", model.Phone);
+            HttpContext.Session.SetString("Register_Password", model.Password);
+            // Redirect đến trang VerifyOTP
+            return RedirectToAction("VerifyOTP", new { email = model.Email, type = "Registration" });
         }
         catch (Exception ex)
         {
             ModelState.AddModelError("", $"Lỗi gửi email: {ex.Message}");
             return View(model);
         }
-
-        return View(model);
     }
 
     // GET: Account/ForgotPassword
@@ -255,16 +259,179 @@ public class AccountController : Controller
         try
         {
             await _emailService.SendOTPEmailAsync(user.Email, otpCode, OTPType.ForgotPassword);
-            TempData["Success"] = $"Mã OTP đã được gửi đến email {user.Email}. Vui lòng kiểm tra và nhập mã OTP cùng mật khẩu mới.";
-            TempData["Email"] = user.Email;
+            // Redirect đến trang VerifyOTP
+            return RedirectToAction("VerifyOTP", new { email = user.Email, type = "ForgotPassword" });
         }
         catch (Exception ex)
         {
             ModelState.AddModelError("", $"Lỗi gửi email: {ex.Message}");
             return View(model);
         }
+    }
 
-        return View(model);
+    // GET: Account/VerifyOTP
+    public IActionResult VerifyOTP(string email, string type)
+    {
+        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(type))
+        {
+            return RedirectToAction("Register");
+        }
+
+        var otpType = type == "Registration" ? OTPType.Registration : OTPType.ForgotPassword;
+        var viewModel = new VerifyOTPViewModel
+        {
+            Email = email,
+            Type = otpType
+        };
+
+        // Lấy thông tin từ session nếu là đăng ký
+        if (otpType == OTPType.Registration)
+        {
+            viewModel.FullName = HttpContext.Session.GetString("Register_FullName") ?? "";
+            viewModel.Phone = HttpContext.Session.GetString("Register_Phone") ?? "";
+            viewModel.Password = HttpContext.Session.GetString("Register_Password") ?? "";
+            viewModel.ConfirmPassword = viewModel.Password;
+        }
+
+        return View(viewModel);
+    }
+
+    // POST: Account/VerifyOTP
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> VerifyOTP(VerifyOTPViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        // Verify OTP
+        var otp = await _context.OTPs
+            .Where(o => o.Email == model.Email
+                     && o.Code == model.OTPCode
+                     && o.Type == model.Type
+                     && !o.IsUsed
+                     && o.ExpiresAt > DateTime.Now)
+            .OrderByDescending(o => o.CreatedAt)
+            .FirstOrDefaultAsync();
+
+        if (otp == null)
+        {
+            ModelState.AddModelError("OTPCode", "Mã OTP không hợp lệ hoặc đã hết hạn.");
+            return View(model);
+        }
+
+        // Mark OTP as used
+        otp.IsUsed = true;
+        await _context.SaveChangesAsync();
+
+        if (model.Type == OTPType.Registration)
+        {
+            // Lấy thông tin từ session
+            var fullName = HttpContext.Session.GetString("Register_FullName") ?? model.FullName ?? "";
+            var phone = HttpContext.Session.GetString("Register_Phone") ?? model.Phone ?? "";
+            var password = HttpContext.Session.GetString("Register_Password") ?? model.Password ?? "";
+
+            // Check if user already exists
+            if (await _context.Users.AnyAsync(u => u.Email == model.Email))
+            {
+                ModelState.AddModelError("", "Email này đã được đăng ký.");
+                return View(model);
+            }
+
+            // Create user
+            var user = new User
+            {
+                Username = model.Email,
+                Email = model.Email,
+                Phone = phone,
+                FullName = fullName,
+                PasswordHash = HashPassword(password),
+                IsEmailVerified = true,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // Xóa thông tin đăng ký khỏi session
+            HttpContext.Session.Remove("Register_Email");
+            HttpContext.Session.Remove("Register_FullName");
+            HttpContext.Session.Remove("Register_Phone");
+            HttpContext.Session.Remove("Register_Password");
+
+            // Auto login
+            HttpContext.Session.SetString("UserId", user.Id.ToString());
+            HttpContext.Session.SetString("Username", user.Username);
+            HttpContext.Session.SetString("FullName", user.FullName);
+
+            TempData["Success"] = "Đăng ký thành công!";
+            return RedirectToAction("Index", "Home");
+        }
+        else // ForgotPassword
+        {
+            if (string.IsNullOrEmpty(model.NewPassword) || string.IsNullOrEmpty(model.ConfirmNewPassword))
+            {
+                ModelState.AddModelError("", "Vui lòng nhập mật khẩu mới.");
+                return View(model);
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+            if (user == null)
+            {
+                ModelState.AddModelError("", "Không tìm thấy tài khoản.");
+                return View(model);
+            }
+
+            // Update password
+            user.PasswordHash = HashPassword(model.NewPassword);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập.";
+            return RedirectToAction("Login");
+        }
+    }
+
+    // GET: Account/ResendOTP
+    public async Task<IActionResult> ResendOTP(string email, string type)
+    {
+        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(type))
+        {
+            return RedirectToAction("Register");
+        }
+
+        var otpType = type == "Registration" ? OTPType.Registration : OTPType.ForgotPassword;
+        var otpCode = GenerateOTP();
+        var newOtp = new OTP
+        {
+            Email = email,
+            Code = otpCode,
+            Type = otpType,
+            CreatedAt = DateTime.Now,
+            ExpiresAt = DateTime.Now.AddMinutes(OTP_EXPIRY_MINUTES)
+        };
+
+        _context.OTPs.Add(newOtp);
+        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _emailService.SendOTPEmailAsync(email, otpCode, otpType);
+            TempData["Success"] = "Mã OTP mới đã được gửi đến email của bạn.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Lỗi gửi email: {ex.Message}";
+        }
+
+        // Get additional data for registration
+        if (otpType == OTPType.Registration)
+        {
+            return RedirectToAction("VerifyOTP", new { email, type });
+        }
+
+        return RedirectToAction("VerifyOTP", new { email, type });
     }
 
     // GET: Account/Logout

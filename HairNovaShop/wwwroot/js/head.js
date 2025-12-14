@@ -30,4 +30,36 @@ document.addEventListener('DOMContentLoaded', function () {
             searchOverlay.classList.remove('active');
         }
     });
+
+    // 6. User dropdown menu
+    const userBtn = document.getElementById('userBtn');
+    const userDropdown = document.querySelector('.user-dropdown');
+    const userDropdownMenu = document.getElementById('userDropdownMenu');
+
+    if (userBtn && userDropdown) {
+        // Toggle dropdown khi click vào icon user
+        userBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            userDropdown.classList.toggle('active');
+        });
+
+        // Đóng dropdown khi click ra ngoài
+        document.addEventListener('click', function (e) {
+            if (!userDropdown.contains(e.target)) {
+                userDropdown.classList.remove('active');
+            }
+        });
+
+        // Đóng dropdown khi click vào link trong menu
+        if (userDropdownMenu) {
+            userDropdownMenu.addEventListener('click', function (e) {
+                // Chỉ đóng nếu click vào link (không phải divider)
+                if (e.target.tagName === 'A') {
+                    setTimeout(() => {
+                        userDropdown.classList.remove('active');
+                    }, 100);
+                }
+            });
+        }
+    }
 });
