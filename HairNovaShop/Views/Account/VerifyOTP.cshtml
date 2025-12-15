@@ -10,55 +10,14 @@
     <meta charset="UTF-8" />
     <title>@ViewData["Title"] - HairNovaShop</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="~/css/head.css" />
     <link rel="stylesheet" href="~/css/account.css" />
 </head>
 <body>
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <div class="marquee-content">
-            <span>⚡️ GIẢM GIÁ SỐC 20% TOÀN BỘ SẢN PHẨM — HÀNG MỚI VỀ — MIỄN PHÍ VẬN CHUYỂN CHO ĐƠN TỪ 59K ⚡️ CHÀO MỪNG BẠN ĐẾN VỚI HAIRNOVA ⚡️</span>
-        </div>
-    </div>
-
-    <!-- Header -->
-    <header>
-        <a class="logo" asp-area="" asp-controller="Home" asp-action="Index">
-            <img src="~/images/logo.png" alt="Logo HairNova" style="width: 180px; height: auto;">
-        </a>
-        <nav>
-            <ul>
-                <li><a asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a></li>
-                <li><a href="#">Cửa hàng</a></li>
-                <li><a href="#">Tin tức</a></li>
-                <li><a href="#">Giới thiệu</a></li>
-                <li><a href="#">Liên hệ</a></li>
-                <li><a href="#">Chính sách</a></li>
-            </ul>
-        </nav>
-        <div class="header-actions">
-            <a href="#" class="icon-btn" title="Tìm kiếm">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-            </a>
-            <a href="#" class="icon-btn" title="Yêu thích">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-            </a>
-            <a href="#" class="icon-btn" title="Giỏ hàng">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-            </a>
-            <a asp-controller="Account" asp-action="Login" class="icon-btn" title="Tài khoản">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-            </a>
-        </div>
-    </header>
+    <!-- Header (Partial View) -->
+    @await Html.PartialAsync("_Header")
 
     <!-- Nền bong bóng -->
     <div class="bg-bubbles">
@@ -142,6 +101,8 @@
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/head.js" asp-append-version="true"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
     <script>

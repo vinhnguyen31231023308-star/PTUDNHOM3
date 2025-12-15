@@ -1,16 +1,144 @@
 @{
-    ViewData["Title"] = "Quản trị";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Trang chủ quản trị";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="container" style="margin-top: 150px;">
-    <h1>Trang Quản trị</h1>
-    
-    <p>Chào mừng đến với trang quản trị!</p>
+<div class="admin-page-header">
+    <h1>Trang chủ quản trị</h1>
+    <p>Chào mừng đến với hệ thống quản trị HairNovaShop</p>
+</div>
 
-    <div class="list-group" style="max-width: 500px; margin-top: 20px;">
-        <a asp-action="Users" class="list-group-item list-group-item-action">
-            👥 Quản lý người dùng
-        </a>
+<div class="admin-stats-grid">
+    <div class="admin-stat-card">
+        <div class="admin-stat-card-header">
+            <div class="admin-stat-card-icon primary">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+        <h3 class="admin-stat-card-title">Tổng khách hàng</h3>
+        <p class="admin-stat-card-value">1,234</p>
+        <p class="admin-stat-card-footer">
+            <i class="fas fa-arrow-up text-success"></i> Tăng 12% so với tháng trước
+        </p>
+    </div>
+
+    <div class="admin-stat-card">
+        <div class="admin-stat-card-header">
+            <div class="admin-stat-card-icon success">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+        </div>
+        <h3 class="admin-stat-card-title">Tổng đơn hàng</h3>
+        <p class="admin-stat-card-value">567</p>
+        <p class="admin-stat-card-footer">
+            <i class="fas fa-arrow-up text-success"></i> Tăng 8% so với tháng trước
+        </p>
+    </div>
+
+    <div class="admin-stat-card">
+        <div class="admin-stat-card-header">
+            <div class="admin-stat-card-icon warning">
+                <i class="fas fa-box"></i>
+            </div>
+        </div>
+        <h3 class="admin-stat-card-title">Tổng sản phẩm</h3>
+        <p class="admin-stat-card-value">89</p>
+        <p class="admin-stat-card-footer">
+            <i class="fas fa-arrow-down text-danger"></i> Giảm 3% so với tháng trước
+        </p>
+    </div>
+
+    <div class="admin-stat-card">
+        <div class="admin-stat-card-header">
+            <div class="admin-stat-card-icon info">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+        </div>
+        <h3 class="admin-stat-card-title">Doanh thu</h3>
+        <p class="admin-stat-card-value">₫125M</p>
+        <p class="admin-stat-card-footer">
+            <i class="fas fa-arrow-up text-success"></i> Tăng 15% so với tháng trước
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h2 class="admin-card-title">Đơn hàng gần đây</h2>
+                <a href="#" class="btn btn-sm admin-btn-primary">Xem tất cả</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn hàng</th>
+                            <th>Khách hàng</th>
+                            <th>Ngày đặt</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#DH001</td>
+                            <td>Nguyễn Văn A</td>
+                            <td>15/12/2024</td>
+                            <td>₫250,000</td>
+                            <td><span class="badge bg-success">Đã giao</span></td>
+                        </tr>
+                        <tr>
+                            <td>#DH002</td>
+                            <td>Trần Thị B</td>
+                            <td>14/12/2024</td>
+                            <td>₫180,000</td>
+                            <td><span class="badge bg-warning">Đang xử lý</span></td>
+                        </tr>
+                        <tr>
+                            <td>#DH003</td>
+                            <td>Lê Văn C</td>
+                            <td>13/12/2024</td>
+                            <td>₫320,000</td>
+                            <td><span class="badge bg-info">Đang giao</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h2 class="admin-card-title">Thống kê nhanh</h2>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="#" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1"><i class="fas fa-box me-2"></i>Quản lý sản phẩm</h6>
+                        <small class="text-muted">89 SP</small>
+                    </div>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1"><i class="fas fa-users me-2"></i>Quản lý khách hàng</h6>
+                        <small class="text-muted">1,234 KH</small>
+                    </div>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1"><i class="fas fa-shopping-cart me-2"></i>Quản lý đơn hàng</h6>
+                        <small class="text-muted">567 ĐH</small>
+                    </div>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1"><i class="fas fa-chart-bar me-2"></i>Thống kê báo cáo</h6>
+                        <small class="text-muted">Xem chi tiết</small>
+                    </div>
+                </a>
+            </div>
+        </div>
     </div>
 </div>

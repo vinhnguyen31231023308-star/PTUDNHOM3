@@ -73,6 +73,12 @@ public class AccountController : Controller
             Response.Cookies.Append("RememberMe", user.Id.ToString(), options);
         }
 
+        // Redirect admin to admin panel, regular users to home
+        if (user.Role == Role.Admin)
+        {
+            return RedirectToAction("Index", "Admin");
+        }
+
         return RedirectToAction("Index", "Home");
     }
 
@@ -369,6 +375,11 @@ public class AccountController : Controller
             HttpContext.Session.SetString("FullName", user.FullName);
 
             TempData["Success"] = "Đăng ký thành công!";
+            // Redirect admin to admin panel after registration (though new users default to User role)
+            if (user.Role == Role.Admin)
+            {
+                return RedirectToAction("Index", "Admin");
+            }
             return RedirectToAction("Index", "Home");
         }
         else // ForgotPassword
