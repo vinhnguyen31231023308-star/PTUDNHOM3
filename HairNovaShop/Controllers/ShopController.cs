@@ -14,20 +14,16 @@ public class ShopController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index(string? category, int? categoryId, string? brand, string? sort = "popular", int page = 1, decimal? maxPrice = null)
+    public async Task<IActionResult> Index(string? category, string? brand, string? sort = "popular", int page = 1, decimal? maxPrice = null)
     {
         var query = _context.Products
             .Include(p => p.Category)
             .Where(p => p.IsActive);
 
-        // Filter by categoryId (preferred) or category name
-        if (categoryId.HasValue)
+        // Filter by category name
+        if (!string.IsNullOrEmpty(category) && category != "all")
         {
-            query = query.Where(p => p.CategoryId == categoryId.Value);
-        }
-        else if (!string.IsNullOrEmpty(category) && category != "all")
-        {
-            query = query.Where(p => p.Category != null && p.Category.Name.Contains(category));
+            query = query.Where(p => p.Category != null && p.Category.Name == category);
         }
 
         // Filter by brand
@@ -61,12 +57,19 @@ public class ShopController : Controller
             .Take(pageSize)
             .ToListAsync();
 
-        ViewBag.Category = category ?? "all";
+        ViewBag.CategoryName = category ?? "all";
         ViewBag.Brand = brand;
         ViewBag.Sort = sort;
         ViewBag.CurrentPage = page;
         ViewBag.TotalPages = totalPages;
         ViewBag.TotalProducts = totalProducts;
+        ViewBag.MaxPrice = maxPrice ?? 1000000;
+
+        // Get categories for filter sidebar
+        ViewBag.Categories = await _context.Categories
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.Name)
+            .ToListAsync();
 
         // Get distinct brands for filter
         ViewBag.Brands = await _context.Products
