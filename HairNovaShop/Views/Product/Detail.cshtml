@@ -1,0 +1,280 @@
+@model HairNovaShop.Models.Product
+@{
+    ViewData["Title"] = Model.Name + " - HairNovaShop";
+    var relatedProducts = ViewBag.RelatedProducts as List<HairNovaShop.Models.Product> ?? new List<HairNovaShop.Models.Product>();
+    var imageList = new List<string>();
+    if (!string.IsNullOrEmpty(Model.Images))
+    {
+        try
+        {
+            imageList = System.Text.Json.JsonSerializer.Deserialize<List<string>>(Model.Images) ?? new List<string>();
+        }
+        catch { }
+    }
+    if (!string.IsNullOrEmpty(Model.MainImage) && !imageList.Contains(Model.MainImage))
+    {
+        imageList.Insert(0, Model.MainImage);
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/detail.css" asp-append-version="true" />
+}
+
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">Cửa Hàng</h1>
+        <div class="breadcrumb">
+            <a asp-controller="Home" asp-action="Index">Trang Chủ</a> / 
+            <a asp-controller="Shop" asp-action="Index">Cửa Hàng</a> / 
+            <span>@Model.Name</span>
+        </div>
+    </div>
+</section>
+
+<section class="product-detail-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-5 gallery-container">
+                <div class="main-image-box">
+                    <button class="gallery-nav-btn prev" onclick="changeImage(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                    <img id="mainImg" src="@(imageList.Any() ? imageList[0] : "/images/placeholder.png")" alt="@Model.Name">
+                    <button class="gallery-nav-btn next" onclick="changeImage(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                @if (imageList.Count > 1)
+                {
+                    <div class="thumb-list">
+                        @for (int i = 0; i < imageList.Count; i++)
+                        {
+                            <div class="thumb-item @(i == 0 ? "active" : "")" onclick="changeImageTo(@i)">
+                                <img src="@imageList[i]" alt="Thumbnail @(i + 1)">
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="col-lg-7 product-info-col">
+                <span class="p-cat">@(Model.Category?.Name ?? "Sản phẩm")</span>
+                <h2 class="p-title">
+                    @Model.Name
+                    @if (Model.Stock > 0)
+                    {
+                        <span class="stock-badge">Còn hàng</span>
+                    }
+                    else
+                    {
+                        <span class="stock-badge" style="background: #e74c3c;">Hết hàng</span>
+                    }
+                </h2>
+
+                @if (Model.Rating > 0)
+                {
+                    <div class="p-rating">
+                        <div class="stars">
+                            @for (int i = 0; i < 5; i++)
+                            {
+                                <i class="fa-solid fa-star @(i < (int)Model.Rating ? "" : "text-muted")"></i>
+                            }
+                        </div>
+                        <span>@Model.Rating.ToString("F1") (@Model.ReviewCount Đánh Giá)</span>
+                    </div>
+                }
+
+                <div class="p-price">
+                    @Model.Price.ToString("N0")đ
+                    @if (Model.OriginalPrice.HasValue && Model.OriginalPrice > Model.Price)
+                    {
+                        <del>@Model.OriginalPrice.Value.ToString("N0")đ</del>
+                    }
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <p class="p-desc">@Model.Description</p>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.Capacity))
+                {
+                    <div class="option-group">
+                        <span class="option-label">Dung Tích</span>
+                        @foreach (var cap in Model.Capacity.Split(','))
+                        {
+                            <button class="size-btn">@cap.Trim()</button>
+                        }
+                    </div>
+                }
+
+                <div class="action-row">
+                    <div class="qty-control">
+                        <button class="qty-btn" onclick="updateQty(-1)">-</button>
+                        <input type="text" value="1" class="qty-input" id="qtyInput" readonly>
+                        <button class="qty-btn" onclick="updateQty(1)">+</button>
+                    </div>
+                    <button class="add-cart-btn" onclick="addToCart(@Model.Id)"><i class="fa-solid fa-cart-plus"></i> Thêm Giỏ Hàng</button>
+                    <button class="buy-now-btn" onclick="buyNow(@Model.Id)">Mua Ngay</button>
+                    <button class="wishlist-btn" onclick="addToWishlist(@Model.Id)"><i class="fa-regular fa-heart"></i></button>
+                </div>
+
+                <div class="meta-info">
+                    @if (!string.IsNullOrEmpty(Model.SKU))
+                    {
+                        <p><span>SKU :</span> @Model.SKU</p>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Tags))
+                    {
+                        <p><span>Tags :</span> @Model.Tags</p>
+                    }
+                    <p class="share-icons">
+                        <span>Share :</span>
+                        <i class="fa-brands fa-facebook-f"></i>
+                        <i class="fa-brands fa-twitter"></i>
+                        <i class="fa-brands fa-instagram"></i>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="product-tabs-section">
+    <div class="container">
+        <div class="nav-tabs">
+            <button class="nav-link active" onclick="openTab(event, 'desc')">Mô Tả</button>
+            <button class="nav-link" onclick="openTab(event, 'info')">Thông Tin Thêm</button>
+            <button class="nav-link" onclick="openTab(event, 'review')">Đánh Giá (@Model.ReviewCount)</button>
+        </div>
+
+        <div id="desc" class="tab-content tab-content-box active">
+            <div class="desc-text">
+                @if (!string.IsNullOrEmpty(Model.DetailedDescription))
+                {
+                    @Html.Raw(Model.DetailedDescription.Replace("\n", "<br>"))
+                }
+                else if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <p>@Model.Description</p>
+                }
+            </div>
+        </div>
+
+        <div id="info" class="tab-content tab-content-box">
+            <table class="tech-table">
+                @if (!string.IsNullOrEmpty(Model.Brand))
+                {
+                    <tr><th>Thương hiệu</th><td>@Model.Brand</td></tr>
+                }
+                @if (!string.IsNullOrEmpty(Model.Origin))
+                {
+                    <tr><th>Xuất xứ</th><td>@Model.Origin</td></tr>
+                }
+                @if (!string.IsNullOrEmpty(Model.Capacity))
+                {
+                    <tr><th>Dung tích</th><td>@Model.Capacity</td></tr>
+                }
+                @if (!string.IsNullOrEmpty(Model.ExpiryDate))
+                {
+                    <tr><th>Hạn sử dụng</th><td>@Model.ExpiryDate</td></tr>
+                }
+            </table>
+        </div>
+
+        <div id="review" class="tab-content tab-content-box">
+            <div class="review-summary">
+                <div class="rating-big-box">
+                    <div class="rating-num">@Model.Rating.ToString("F1") <span>out of 5</span></div>
+                    <div class="rating-stars-big">
+                        @for (int i = 0; i < 5; i++)
+                        {
+                            <i class="fa-solid fa-star @(i < (int)Model.Rating ? "" : "text-muted")"></i>
+                        }
+                    </div>
+                    <p style="color:#888;">(@Model.ReviewCount Reviews)</p>
+                </div>
+            </div>
+            <div class="text-center p-4">
+                <p>Chức năng đánh giá đang được phát triển.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+@if (relatedProducts.Any())
+{
+    <section class="products-section">
+        <div class="container">
+            <div class="products-header">
+                <h2 class="section-title">Sản Phẩm Liên Quan</h2>
+            </div>
+            <div class="products-grid">
+                @foreach (var product in relatedProducts)
+                {
+                    @await Html.PartialAsync("_ProductCard", product)
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<script>
+let currentImageIndex = 0;
+const images = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(imageList));
+
+function changeImage(direction) {
+    if (images.length === 0) return;
+    currentImageIndex += direction;
+    if (currentImageIndex < 0) currentImageIndex = images.length - 1;
+    if (currentImageIndex >= images.length) currentImageIndex = 0;
+    document.getElementById('mainImg').src = images[currentImageIndex];
+    updateThumbnailActive();
+}
+
+function changeImageTo(index) {
+    currentImageIndex = index;
+    document.getElementById('mainImg').src = images[index];
+    updateThumbnailActive();
+}
+
+function updateThumbnailActive() {
+    document.querySelectorAll('.thumb-item').forEach((item, index) => {
+        item.classList.toggle('active', index === currentImageIndex);
+    });
+}
+
+function updateQty(change) {
+    const input = document.getElementById('qtyInput');
+    let qty = parseInt(input.value) + change;
+    if (qty < 1) qty = 1;
+    if (qty > @Model.Stock) qty = @Model.Stock;
+    input.value = qty;
+}
+
+function openTab(evt, tabName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].classList.remove("active");
+    }
+    tablinks = document.getElementsByClassName("nav-link");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].classList.remove("active");
+    }
+    document.getElementById(tabName).classList.add("active");
+    evt.currentTarget.classList.add("active");
+}
+
+function addToCart(productId) {
+    // TODO: Implement
+    console.log('Add to cart:', productId);
+}
+
+function buyNow(productId) {
+    // TODO: Implement
+    console.log('Buy now:', productId);
+}
+
+function addToWishlist(productId) {
+    // TODO: Implement
+    console.log('Add to wishlist:', productId);
+}
+</script>

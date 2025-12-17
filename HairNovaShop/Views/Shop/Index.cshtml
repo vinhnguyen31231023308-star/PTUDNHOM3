@@ -1,0 +1,143 @@
+@model List<HairNovaShop.Models.Product>
+@{
+    ViewData["Title"] = "Cửa hàng - HairNovaShop";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/shop.css" asp-append-version="true" />
+}
+
+<section class="shop-header">
+    <img src="~/images/shop-banner.jpg" alt="HairNova Banner" class="shop-banner" onerror="this.style.display='none'" />
+</section>
+
+<main class="shop-main">
+    <!-- SIDEBAR FILTER -->
+    <aside class="shop-sidebar">
+        <div class="filter-block">
+            <h3 class="filter-title">Danh mục</h3>
+            <ul class="filter-list">
+                <li>
+                    <a asp-controller="Shop" asp-action="Index" class="filter-btn cat-btn @(ViewBag.Category == "all" || ViewBag.Category == null ? "active" : "")" data-category="all">
+                        Tất cả
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Shop" asp-action="Index" asp-route-category="Dầu gội" class="filter-btn cat-btn @(ViewBag.Category == "Dầu gội" ? "active" : "")">
+                        Dầu gội
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Shop" asp-action="Index" asp-route-category="Dầu xả" class="filter-btn cat-btn @(ViewBag.Category == "Dầu xả" ? "active" : "")">
+                        Dầu xả
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Shop" asp-action="Index" asp-route-category="Sản phẩm dưỡng tóc" class="filter-btn cat-btn @(ViewBag.Category == "Sản phẩm dưỡng tóc" ? "active" : "")">
+                        Sản phẩm dưỡng tóc
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Shop" asp-action="Index" asp-route-category="Thuốc nhuộm tóc" class="filter-btn cat-btn @(ViewBag.Category == "Thuốc nhuộm tóc" ? "active" : "")">
+                        Thuốc nhuộm tóc
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="filter-block">
+            <h3 class="filter-title">Lọc theo giá</h3>
+            <form method="get" id="priceFilterForm">
+                <div class="price-range">
+                    <span>0 đ</span>
+                    <input type="range" id="priceRange" name="maxPrice" min="0" max="1000000" step="50000" value="@(ViewBag.MaxPrice ?? 1000000)" onchange="document.getElementById('priceValue').textContent = this.value + ' đ';" />
+                    <span>1.000.000 đ</span>
+                </div>
+                <div class="price-current">
+                    Giá tối đa: <span id="priceValue">@(ViewBag.MaxPrice?.ToString("N0") ?? "1.000.000") đ</span>
+                </div>
+                <input type="hidden" name="category" value="@ViewBag.Category" />
+                <input type="hidden" name="brand" value="@ViewBag.Brand" />
+                <input type="hidden" name="sort" value="@ViewBag.Sort" />
+                <button type="submit" class="btn btn-sm btn-primary mt-2">Áp dụng</button>
+            </form>
+        </div>
+
+        @if (ViewBag.Brands != null && ((List<string>)ViewBag.Brands).Any())
+        {
+            <div class="filter-block">
+                <h3 class="filter-title">Thương hiệu</h3>
+                <div class="brand-checkboxes">
+                    @foreach (var brand in (List<string>)ViewBag.Brands)
+                    {
+                        <label>
+                            <input type="checkbox" class="brand-checkbox" value="@brand" @(ViewBag.Brand == brand ? "checked" : "") onchange="filterByBrand('@brand')" />
+                            @brand
+                        </label>
+                    }
+                </div>
+            </div>
+        }
+    </aside>
+
+    <!-- CONTENT -->
+    <section class="shop-content">
+        <!-- SORT TABS -->
+        <div class="shop-toolbar">
+            <div class="sort-tabs">
+                <a asp-controller="Shop" asp-action="Index" asp-route-category="@ViewBag.Category" asp-route-brand="@ViewBag.Brand" asp-route-maxPrice="@ViewBag.MaxPrice" asp-route-sort="popular" class="sort-tab @(ViewBag.Sort == "popular" ? "active" : "")">Bán chạy</a>
+                <a asp-controller="Shop" asp-action="Index" asp-route-category="@ViewBag.Category" asp-route-brand="@ViewBag.Brand" asp-route-maxPrice="@ViewBag.MaxPrice" asp-route-sort="new" class="sort-tab @(ViewBag.Sort == "new" ? "active" : "")">Mới nhất</a>
+                <a asp-controller="Shop" asp-action="Index" asp-route-category="@ViewBag.Category" asp-route-brand="@ViewBag.Brand" asp-route-maxPrice="@ViewBag.MaxPrice" asp-route-sort="priceAsc" class="sort-tab @(ViewBag.Sort == "priceAsc" ? "active" : "")">Giá thấp đến cao</a>
+                <a asp-controller="Shop" asp-action="Index" asp-route-category="@ViewBag.Category" asp-route-brand="@ViewBag.Brand" asp-route-maxPrice="@ViewBag.MaxPrice" asp-route-sort="priceDesc" class="sort-tab @(ViewBag.Sort == "priceDesc" ? "active" : "")">Giá cao đến thấp</a>
+            </div>
+            <div class="product-count">
+                Có <span id="productCount">@ViewBag.TotalProducts</span> sản phẩm
+            </div>
+        </div>
+
+        <!-- PRODUCT GRID -->
+        <div id="productGrid" class="product-grid">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var product in Model)
+                {
+                    @await Html.PartialAsync("_ProductCard", product)
+                }
+            }
+            else
+            {
+                <div class="text-center p-5">
+                    <p>Không tìm thấy sản phẩm nào.</p>
+                </div>
+            }
+        </div>
+
+        @if (ViewBag.TotalPages > 1)
+        {
+            <div class="pagination">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <a asp-controller="Shop" asp-action="Index" asp-route-category="@ViewBag.Category" asp-route-brand="@ViewBag.Brand" asp-route-maxPrice="@ViewBag.MaxPrice" asp-route-sort="@ViewBag.Sort" asp-route-page="@(ViewBag.CurrentPage - 1)" class="page-btn">&lt;</a>
+                }
+
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <a asp-controller="Shop" asp-action="Index" asp-route-category="@ViewBag.Category" asp-route-brand="@ViewBag.Brand" asp-route-maxPrice="@ViewBag.MaxPrice" asp-route-sort="@ViewBag.Sort" asp-route-page="@i" class="page-btn page-number @(i == ViewBag.CurrentPage ? "active" : "")">@i</a>
+                }
+
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <a asp-controller="Shop" asp-action="Index" asp-route-category="@ViewBag.Category" asp-route-brand="@ViewBag.Brand" asp-route-maxPrice="@ViewBag.MaxPrice" asp-route-sort="@ViewBag.Sort" asp-route-page="@(ViewBag.CurrentPage + 1)" class="page-btn">&gt;</a>
+                }
+            </div>
+        }
+    </section>
+</main>
+
+<script>
+function filterByBrand(brand) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('brand', brand);
+    window.location.href = url.toString();
+}
+</script>

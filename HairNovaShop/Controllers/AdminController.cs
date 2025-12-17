@@ -5,6 +5,7 @@ using HairNovaShop.Data;
 using HairNovaShop.Helpers;
 using HairNovaShop.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace HairNovaShop.Controllers;
@@ -231,5 +232,334 @@ public class AdminController : Controller
 
         TempData["Success"] = $"Đã xóa tài khoản {userName} thành công!";
         return RedirectToAction("Users");
+    }
+
+    // ==================== PRODUCTS MANAGEMENT ====================
+
+    // GET: Admin/Products
+    public async Task<IActionResult> Products()
+    {
+        var products = await _context.Products
+            .Include(p => p.Category)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync();
+        return View(products);
+    }
+
+    // GET: Admin/Products/Create
+    public async Task<IActionResult> CreateProduct()
+    {
+        var categories = await _context.Categories
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.Name)
+            .ToListAsync();
+        ViewBag.Categories = new SelectList(categories, "Id", "Name");
+        return View();
+    }
+
+    // POST: Admin/Products/Create
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateProduct(Product model, IFormFile? mainImage, List<IFormFile>? images)
+    {
+        if (ModelState.IsValid)
+        {
+            // Convert main image to base64
+            if (mainImage != null && mainImage.Length > 0)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await mainImage.CopyToAsync(memoryStream);
+                    var imageBytes = memoryStream.ToArray();
+                    var base64String = Convert.ToBase64String(imageBytes);
+                    var contentType = mainImage.ContentType ?? "image/jpeg";
+                    model.MainImage = $"data:{contentType};base64,{base64String}";
+                }
+            }
+
+            // Convert additional images to base64
+            if (images != null && images.Any())
+            {
+                var base64Images = new List<string>();
+                foreach (var image in images)
+                {
+                    if (image.Length > 0)
+                    {
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await image.CopyToAsync(memoryStream);
+                            var imageBytes = memoryStream.ToArray();
+                            var base64String = Convert.ToBase64String(imageBytes);
+                            var contentType = image.ContentType ?? "image/jpeg";
+                            base64Images.Add($"data:{contentType};base64,{base64String}");
+                        }
+                    }
+                }
+                if (base64Images.Any())
+                {
+                    model.Images = System.Text.Json.JsonSerializer.Serialize(base64Images);
+                }
+            }
+
+            model.CreatedAt = DateTime.Now;
+            _context.Products.Add(model);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Đã tạo sản phẩm {model.Name} thành công!";
+            return RedirectToAction("Products");
+        }
+
+        // Load categories again if ModelState is invalid
+        var categories = await _context.Categories
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.Name)
+            .ToListAsync();
+        ViewBag.Categories = new SelectList(categories, "Id", "Name", model.CategoryId);
+        return View(model);
+    }
+
+    // GET: Admin/Products/Edit/{id}
+    public async Task<IActionResult> EditProduct(int id)
+    {
+        var product = await _context.Products.FindAsync(id);
+        if (product == null)
+        {
+            return NotFound();
+        }
+
+        var categories = await _context.Categories
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.Name)
+            .ToListAsync();
+        ViewBag.Categories = new SelectList(categories, "Id", "Name", product.CategoryId);
+        return View(product);
+    }
+
+    // POST: Admin/Products/Edit/{id}
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditProduct(int id, Product model, IFormFile? mainImage, List<IFormFile>? images)
+    {
+        if (id != model.Id)
+        {
+            return NotFound();
+        }
+
+        var product = await _context.Products.FindAsync(id);
+        if (product == null)
+        {
+            return NotFound();
+        }
+
+        if (ModelState.IsValid)
+        {
+            // Convert new main image to base64 if provided
+            if (mainImage != null && mainImage.Length > 0)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await mainImage.CopyToAsync(memoryStream);
+                    var imageBytes = memoryStream.ToArray();
+                    var base64String = Convert.ToBase64String(imageBytes);
+                    var contentType = mainImage.ContentType ?? "image/jpeg";
+                    product.MainImage = $"data:{contentType};base64,{base64String}";
+                }
+            }
+
+            // Convert additional images to base64 if provided
+            if (images != null && images.Any(i => i.Length > 0))
+            {
+                var base64Images = new List<string>();
+                
+                // Keep existing images (they should already be base64)
+                if (!string.IsNullOrEmpty(product.Images))
+                {
+                    try
+                    {
+                        var existingImages = System.Text.Json.JsonSerializer.Deserialize<List<string>>(product.Images);
+                        if (existingImages != null)
+                        {
+                            base64Images.AddRange(existingImages);
+                        }
+                    }
+                    catch { }
+                }
+
+                // Add new images as base64
+                foreach (var image in images.Where(i => i.Length > 0))
+                {
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await image.CopyToAsync(memoryStream);
+                        var imageBytes = memoryStream.ToArray();
+                        var base64String = Convert.ToBase64String(imageBytes);
+                        var contentType = image.ContentType ?? "image/jpeg";
+                        base64Images.Add($"data:{contentType};base64,{base64String}");
+                    }
+                }
+
+                product.Images = System.Text.Json.JsonSerializer.Serialize(base64Images);
+            }
+
+            // Update other fields
+            product.Name = model.Name;
+            product.CategoryId = model.CategoryId;
+            product.Description = model.Description;
+            product.DetailedDescription = model.DetailedDescription;
+            product.Price = model.Price;
+            product.OriginalPrice = model.OriginalPrice;
+            product.SKU = model.SKU;
+            product.Tags = model.Tags;
+            product.Brand = model.Brand;
+            product.Origin = model.Origin;
+            product.Capacity = model.Capacity;
+            product.ExpiryDate = model.ExpiryDate;
+            product.Stock = model.Stock;
+            product.Rating = model.Rating;
+            product.ReviewCount = model.ReviewCount;
+            product.IsActive = model.IsActive;
+            product.IsFeatured = model.IsFeatured;
+            product.IsNew = model.IsNew;
+            product.OnSale = model.OnSale;
+            product.UpdatedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Đã cập nhật sản phẩm {product.Name} thành công!";
+            return RedirectToAction("Products");
+        }
+
+        var categories = await _context.Categories
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.Name)
+            .ToListAsync();
+        ViewBag.Categories = new SelectList(categories, "Id", "Name", product.CategoryId);
+        return View(product);
+    }
+
+    // POST: Admin/Products/Delete/{id}
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteProduct(int id)
+    {
+        var product = await _context.Products.FindAsync(id);
+        if (product == null)
+        {
+            return NotFound();
+        }
+
+        // No need to delete files since images are stored as base64 in database
+        var productName = product.Name;
+        _context.Products.Remove(product);
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = $"Đã xóa sản phẩm {productName} thành công!";
+        return RedirectToAction("Products");
+    }
+
+    // ==================== CATEGORIES MANAGEMENT ====================
+
+    // GET: Admin/Categories
+    public async Task<IActionResult> Categories()
+    {
+        var categories = await _context.Categories
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync();
+        return View(categories);
+    }
+
+    // GET: Admin/Categories/Create
+    public IActionResult CreateCategory()
+    {
+        return View();
+    }
+
+    // POST: Admin/Categories/Create
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateCategory(Category model)
+    {
+        if (ModelState.IsValid)
+        {
+            model.CreatedAt = DateTime.Now;
+            _context.Categories.Add(model);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Đã tạo danh mục {model.Name} thành công!";
+            return RedirectToAction("Categories");
+        }
+
+        return View(model);
+    }
+
+    // GET: Admin/Categories/Edit/{id}
+    public async Task<IActionResult> EditCategory(int id)
+    {
+        var category = await _context.Categories.FindAsync(id);
+        if (category == null)
+        {
+            return NotFound();
+        }
+
+        return View(category);
+    }
+
+    // POST: Admin/Categories/Edit/{id}
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditCategory(int id, Category model)
+    {
+        if (id != model.Id)
+        {
+            return NotFound();
+        }
+
+        var category = await _context.Categories.FindAsync(id);
+        if (category == null)
+        {
+            return NotFound();
+        }
+
+        if (ModelState.IsValid)
+        {
+            category.Name = model.Name;
+            category.Description = model.Description;
+            category.IsActive = model.IsActive;
+            category.UpdatedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Đã cập nhật danh mục {category.Name} thành công!";
+            return RedirectToAction("Categories");
+        }
+
+        return View(model);
+    }
+
+    // POST: Admin/Categories/Delete/{id}
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteCategory(int id)
+    {
+        var category = await _context.Categories.FindAsync(id);
+        if (category == null)
+        {
+            return NotFound();
+        }
+
+        // Check if category has products
+        var hasProducts = await _context.Products.AnyAsync(p => p.CategoryId == id);
+        if (hasProducts)
+        {
+            TempData["Error"] = $"Không thể xóa danh mục {category.Name} vì còn sản phẩm đang sử dụng danh mục này!";
+            return RedirectToAction("Categories");
+        }
+
+        var categoryName = category.Name;
+        _context.Categories.Remove(category);
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = $"Đã xóa danh mục {categoryName} thành công!";
+        return RedirectToAction("Categories");
     }
 }

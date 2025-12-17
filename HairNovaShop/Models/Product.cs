@@ -1,0 +1,74 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace HairNovaShop.Models;
+
+public class Product
+{
+    public int Id { get; set; }
+
+    [Required]
+    [StringLength(255)]
+    public string Name { get; set; } = string.Empty;
+
+    // Foreign key to Category
+    public int? CategoryId { get; set; }
+
+    // Navigation property
+    public Category? Category { get; set; }
+
+    [StringLength(2000)]
+    public string? Description { get; set; }
+
+    [StringLength(5000)]
+    public string? DetailedDescription { get; set; }
+
+    [Required]
+    [Range(0, double.MaxValue)]
+    public decimal Price { get; set; }
+
+    [Range(0, double.MaxValue)]
+    public decimal? OriginalPrice { get; set; }
+
+    // Base64 string để lưu hình ảnh chính
+    public string? MainImage { get; set; }
+
+    // JSON string để lưu mảng các hình ảnh phụ (base64 strings)
+    public string? Images { get; set; }
+
+    [StringLength(100)]
+    public string? SKU { get; set; }
+
+    [StringLength(500)]
+    public string? Tags { get; set; }
+
+    [StringLength(100)]
+    public string? Brand { get; set; }
+
+    [StringLength(100)]
+    public string? Origin { get; set; }
+
+    [StringLength(200)]
+    public string? Capacity { get; set; } // "30ml, 60ml, 80ml, 100ml"
+
+    [StringLength(200)]
+    public string? ExpiryDate { get; set; }
+
+    public int Stock { get; set; } = 0;
+
+    [Range(0, 5)]
+    public double Rating { get; set; } = 0;
+
+    public int ReviewCount { get; set; } = 0;
+
+    public bool IsActive { get; set; } = true;
+
+    public bool IsFeatured { get; set; } = false; // Sản phẩm nổi bật
+
+    public bool IsNew { get; set; } = false; // Sản phẩm mới
+
+    public bool OnSale { get; set; } = false; // Đang giảm giá
+
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    public DateTime? UpdatedAt { get; set; }
+}

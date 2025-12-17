@@ -36,7 +36,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a asp-controller="Admin" asp-action="Products" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Products" || ViewContext.RouteData.Values["action"]?.ToString() == "CreateProduct" || ViewContext.RouteData.Values["action"]?.ToString() == "EditProduct" ? "active" : "")">
                             <i class="fas fa-box"></i>
                             <span>Quản lý sản phẩm</span>
                         </a>
@@ -60,7 +60,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a asp-controller="Admin" asp-action="Categories" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Categories" || ViewContext.RouteData.Values["action"]?.ToString() == "CreateCategory" || ViewContext.RouteData.Values["action"]?.ToString() == "EditCategory" ? "active" : "")">
                             <i class="fas fa-tags"></i>
                             <span>Quản lý danh mục</span>
                         </a>

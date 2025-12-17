@@ -23,12 +23,12 @@
             </li>
 
             <li class="nav-item-dropdown">
-                <a href="#" class="@(currentController == "Shop" || currentController == "Product" ? "active" : "")">Cửa hàng <i class="fa-solid fa-angle-down" style="font-size: 12px; margin-left: 4px;"></i></a>
+                <a asp-controller="Shop" asp-action="Index" class="@(currentController == "Shop" || currentController == "Product" ? "active" : "")">Cửa hàng <i class="fa-solid fa-angle-down" style="font-size: 12px; margin-left: 4px;"></i></a>
                 <ul class="dropdown-menu">
-                    <li><a href="#">Dầu gội</a></li>
-                    <li><a href="#">Dầu xả</a></li>
-                    <li><a href="#">Dưỡng tóc</a></li>
-                    <li><a href="#">Thuốc nhuộm</a></li>
+                    <li><a asp-controller="Shop" asp-action="Index" asp-route-category="Dầu gội">Dầu gội</a></li>
+                    <li><a asp-controller="Shop" asp-action="Index" asp-route-category="Dầu xả">Dầu xả</a></li>
+                    <li><a asp-controller="Shop" asp-action="Index" asp-route-category="Sản phẩm dưỡng tóc">Dưỡng tóc</a></li>
+                    <li><a asp-controller="Shop" asp-action="Index" asp-route-category="Thuốc nhuộm tóc">Thuốc nhuộm</a></li>
                 </ul>
             </li>
 

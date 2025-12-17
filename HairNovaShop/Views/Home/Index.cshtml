@@ -1,8 +1,142 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Trang chủ - HairNovaShop";
+    var featuredProducts = ViewBag.FeaturedProducts as List<HairNovaShop.Models.Product> ?? new List<HairNovaShop.Models.Product>();
+    var newProducts = ViewBag.NewProducts as List<HairNovaShop.Models.Product> ?? new List<HairNovaShop.Models.Product>();
+    var onSaleProducts = ViewBag.OnSaleProducts as List<HairNovaShop.Models.Product> ?? new List<HairNovaShop.Models.Product>();
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@section Styles {
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+}
+
+<section class="banner hidden-up delay-100">
+    <div class="banner-content">
+        <span class="subtitle">Giải pháp chăm sóc tóc</span>
+
+        <div class="trustpilot">
+            <span class="star-icon">★</span> 4.9 từ khách hàng tin dùng
+        </div>
+
+        <h1 class="section-title">HairNova - Nơi mái tóc được yêu thương</h1>
+
+        <p class="banner-desc">
+            Trải nghiệm tinh chất thiên nhiên, nuôi dưỡng dịu nhẹ, mang lại độ mềm mượt và sức sống lâu dài. Làn tóc khỏe đẹp bắt đầu từ HairNova.
+        </p>
+        <div class="cta-group">
+            <a asp-controller="Shop" asp-action="Index" class="btn btn-primary">Mua Ngay!</a>
+            <a href="#about" class="btn btn-outline">Về Chúng Tôi</a>
+        </div>
+    </div>
+
+    <div class="banner-visuals">
+        <div class="phone-mockup">
+            <img src="~/images/banner.jpg" alt="Banner" onerror="this.style.display='none'">
+        </div>
+    </div>
+</section>
+
+<section class="marquee-section">
+    <div class="marquee-track">
+        <div class="pill-item">
+            <div class="pill-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div class="pill-content">
+                <span class="pill-title">Chính Hãng 100%</span>
+                <span class="pill-desc">Xuất xứ rõ ràng</span>
+            </div>
+        </div>
+
+        <div class="pill-item">
+            <div class="pill-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+            </div>
+            <div class="pill-content">
+                <span class="pill-title">Hoàn Tiền 200%</span>
+                <span class="pill-desc">Nếu phát hiện giả</span>
+            </div>
+        </div>
+
+        <div class="pill-item">
+            <div class="pill-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+            </div>
+            <div class="pill-content">
+                <span class="pill-title">Giao Hàng 2H</span>
+                <span class="pill-desc">Nội thành siêu tốc</span>
+            </div>
+        </div>
+
+        <div class="pill-item">
+            <div class="pill-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div class="pill-content">
+                <span class="pill-title">Hỗ Trợ 24/7</span>
+                <span class="pill-desc">Tư vấn tận tâm</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+@if (featuredProducts.Any())
+{
+    <section class="products-section hidden-up delay-200">
+        <div class="container">
+            <div class="products-header">
+                <span class="subtitle">Sản phẩm</span>
+                <h2 class="section-title">Sản Phẩm Nổi Bật</h2>
+            </div>
+            <div class="products-grid">
+                @foreach (var product in featuredProducts)
+                {
+                    @await Html.PartialAsync("_ProductCard", product)
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@if (newProducts.Any())
+{
+    <section class="products-section hidden-up delay-200">
+        <div class="container">
+            <div class="products-header">
+                <span class="subtitle">Mới về</span>
+                <h2 class="section-title">Sản Phẩm Mới</h2>
+            </div>
+            <div class="products-grid">
+                @foreach (var product in newProducts)
+                {
+                    @await Html.PartialAsync("_ProductCard", product)
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@if (onSaleProducts.Any())
+{
+    <section class="products-section hidden-up delay-200">
+        <div class="container">
+            <div class="products-header">
+                <span class="subtitle">Ưu đãi</span>
+                <h2 class="section-title">Sản Phẩm Đang Giảm Giá</h2>
+            </div>
+            <div class="products-grid">
+                @foreach (var product in onSaleProducts)
+                {
+                    @await Html.PartialAsync("_ProductCard", product)
+                }
+            </div>
+        </div>
+    </section>
+}
