@@ -1,4 +1,4 @@
-﻿/* --- VARIABLES --- */
+/* --- VARIABLES --- */
 :root {
     --bs-primary: #0061E1;
     --bs-primary-dark: #004bb0;
@@ -252,25 +252,9 @@ nav {
         transition: color 0.3s ease;
     }
 
-        nav a::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 3px;
-            bottom: 0;
-            left: 0;
-            background-color: var(--bs-secondary);
-            transition: width 0.3s ease;
-            border-radius: 2px;
-        }
-
         nav a:hover, nav a.active {
             color: var(--bs-primary);
         }
-
-            nav a:hover::after {
-                width: 100%;
-            }
 
 .header-actions {
     flex: 1;

@@ -14,14 +14,18 @@ public class ShopController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index(string? category, string? brand, string? sort = "popular", int page = 1, decimal? maxPrice = null)
+    public async Task<IActionResult> Index(string? category, int? categoryId, string? brand, string? sort = "popular", int page = 1, decimal? maxPrice = null)
     {
         var query = _context.Products
             .Include(p => p.Category)
             .Where(p => p.IsActive);
 
-        // Filter by category
-        if (!string.IsNullOrEmpty(category) && category != "all")
+        // Filter by categoryId (preferred) or category name
+        if (categoryId.HasValue)
+        {
+            query = query.Where(p => p.CategoryId == categoryId.Value);
+        }
+        else if (!string.IsNullOrEmpty(category) && category != "all")
         {
             query = query.Where(p => p.Category != null && p.Category.Name.Contains(category));
         }

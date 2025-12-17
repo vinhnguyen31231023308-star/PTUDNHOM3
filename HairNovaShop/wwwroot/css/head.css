@@ -23,6 +23,7 @@ body {
     line-height: 1.6;
     overflow-x: hidden;
     position: relative;
+    height: 150vh;
 }
 
 /* --- TOP BAR --- */
@@ -105,19 +106,20 @@ nav {
 
     nav a {
         text-decoration: none;
-        color: var(--text-gray); /* Màu xám mặc định */
+        color: var(--text-gray);
         font-weight: 600;
         padding: 25px 0;
         display: inline-block;
         transition: 0.3s;
+        position: relative;
     }
 
-        nav a:hover {
-            color: var(--bs-primary); /* Màu xanh khi hover */
+        nav a::after {
+            display: none !important;
         }
 
-        nav a.active {
-            color: var(--bs-primary); /* Màu xanh khi được chọn */
+        nav a:hover, nav a.active {
+            color: var(--bs-primary);
         }
 
 .nav-item-dropdown {
@@ -221,7 +223,7 @@ nav {
     color: var(--text-dark);
 }
 
-/* --- USER DROPDOWN --- */
+/* --- USER DROPDOWN (Additional for ASP.NET Core) --- */
 .user-dropdown {
     position: relative;
 }

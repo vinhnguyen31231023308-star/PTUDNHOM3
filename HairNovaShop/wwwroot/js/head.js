@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // 6. User dropdown menu
+    // 6. User dropdown menu (Additional for ASP.NET Core)
     const userBtn = document.getElementById('userBtn');
     const userDropdown = document.querySelector('.user-dropdown');
     const userDropdownMenu = document.getElementById('userDropdownMenu');
