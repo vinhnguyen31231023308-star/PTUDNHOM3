@@ -39,11 +39,11 @@
                 <h3 class="filter-title">Lọc theo giá</h3>
                 <div class="price-range">
                     <span>0 đ</span>
-                    <input type="range" id="priceRange" min="0" max="1000000" step="50000" value="@(ViewBag.MaxPrice ?? 1000000)" />
-                    <span>1.000.000 đ</span>
+                    <input type="range" id="priceRange" min="0" max="@ViewBag.MaxProductPrice" step="50000" value="@ViewBag.MaxPrice" />
+                    <span>@(((decimal)ViewBag.MaxProductPrice).ToString("N0")) đ</span>
                 </div>
                 <div class="price-current">
-                    Giá tối đa: <span id="priceValue">@((ViewBag.MaxPrice ?? 1000000).ToString("N0")) đ</span>
+                    Giá tối đa: <span id="priceValue">@(((decimal)ViewBag.MaxPrice).ToString("N0")) đ</span>
                 </div>
             </div>
 

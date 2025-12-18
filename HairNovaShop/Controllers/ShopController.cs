@@ -16,6 +16,11 @@ public class ShopController : Controller
 
     public async Task<IActionResult> Index(string? category, string? brand, string? sort = "popular", int page = 1, decimal? maxPrice = null)
     {
+        // Get maximum price from all active products
+        var maxProductPrice = await _context.Products
+            .Where(p => p.IsActive)
+            .MaxAsync(p => (decimal?)p.Price) ?? 1000000;
+
         var query = _context.Products
             .Include(p => p.Category)
             .Where(p => p.IsActive);
@@ -63,7 +68,8 @@ public class ShopController : Controller
         ViewBag.CurrentPage = page;
         ViewBag.TotalPages = totalPages;
         ViewBag.TotalProducts = totalProducts;
-        ViewBag.MaxPrice = maxPrice ?? 1000000;
+        ViewBag.MaxPrice = maxPrice ?? maxProductPrice;
+        ViewBag.MaxProductPrice = maxProductPrice;
 
         // Get categories for filter sidebar
         ViewBag.Categories = await _context.Categories
