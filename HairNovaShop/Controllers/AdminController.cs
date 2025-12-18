@@ -301,6 +301,25 @@ public class AdminController : Controller
                 }
             }
 
+            // Handle StockByCapacity from form
+            var stockByCapacityJson = Request.Form["StockByCapacity"].ToString();
+            if (!string.IsNullOrEmpty(stockByCapacityJson))
+            {
+                model.StockByCapacity = stockByCapacityJson;
+                // Calculate total stock from variants
+                try
+                {
+                    var variants = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(stockByCapacityJson);
+                    if (variants != null)
+                    {
+                        model.Stock = variants.Sum(v => v.ContainsKey("Stock") && v["Stock"] != null 
+                            ? int.Parse(v["Stock"].ToString() ?? "0") 
+                            : 0);
+                    }
+                }
+                catch { }
+            }
+
             model.CreatedAt = DateTime.Now;
             _context.Products.Add(model);
             await _context.SaveChangesAsync();
@@ -412,9 +431,30 @@ public class AdminController : Controller
             product.Tags = model.Tags;
             product.Brand = model.Brand;
             product.Origin = model.Origin;
-            product.Capacity = model.Capacity;
             product.ExpiryDate = model.ExpiryDate;
-            product.Stock = model.Stock;
+            
+            // Handle StockByCapacity from form
+            var stockByCapacityJson = Request.Form["StockByCapacity"].ToString();
+            if (!string.IsNullOrEmpty(stockByCapacityJson))
+            {
+                product.StockByCapacity = stockByCapacityJson;
+                // Calculate total stock from variants
+                try
+                {
+                    var variants = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(stockByCapacityJson);
+                    if (variants != null)
+                    {
+                        product.Stock = variants.Sum(v => v.ContainsKey("Stock") && v["Stock"] != null 
+                            ? int.Parse(v["Stock"].ToString() ?? "0") 
+                            : 0);
+                    }
+                }
+                catch { }
+            }
+            else
+            {
+                product.Stock = model.Stock;
+            }
             product.Rating = model.Rating;
             product.ReviewCount = model.ReviewCount;
             product.IsActive = model.IsActive;

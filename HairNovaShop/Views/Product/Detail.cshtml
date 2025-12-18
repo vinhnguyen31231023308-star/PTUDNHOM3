@@ -79,7 +79,7 @@
                     </div>
                 }
 
-                <div class="p-price">
+                <div class="p-price" id="productPrice">
                     @Model.Price.ToString("N0")đ
                     @if (Model.OriginalPrice.HasValue && Model.OriginalPrice > Model.Price)
                     {
@@ -92,15 +92,42 @@
                     <p class="p-desc">@Model.Description</p>
                 }
 
-                @if (!string.IsNullOrEmpty(Model.Capacity))
-                {
-                    <div class="option-group">
-                        <span class="option-label">Dung Tích</span>
-                        @foreach (var cap in Model.Capacity.Split(','))
-                        {
-                            <button class="size-btn">@cap.Trim()</button>
-                        }
-                    </div>
+                @{
+                    var variantsJson = Model.StockByCapacity ?? "[]";
+                    var variants = new List<Dictionary<string, object>>();
+                    try
+                    {
+                        variants = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(variantsJson) ?? new List<Dictionary<string, object>>();
+                    }
+                    catch { }
+                    
+                    if (variants.Any())
+                    {
+                        <div class="option-group">
+                            <span class="option-label">Dung Tích</span>
+                            @foreach (var variant in variants)
+                            {
+                                var capacity = variant?.GetValueOrDefault("Capacity")?.ToString() ?? "";
+                                var price = variant?.GetValueOrDefault("Price");
+                                var stock = variant?.GetValueOrDefault("Stock")?.ToString() ?? "0";
+                                var variantPrice = price != null ? decimal.Parse(price.ToString() ?? "0") : (decimal?)null;
+                                var variantStock = int.Parse(stock);
+                                
+                                <button class="size-btn variant-btn" 
+                                        data-capacity="@capacity"
+                                        data-price="@(variantPrice?.ToString("N0") ?? Model.Price.ToString("N0"))"
+                                        data-stock="@variantStock"
+                                        onclick="selectVariant(this, '@capacity', @(variantPrice?.ToString() ?? "null"), @variantStock)">
+                                    @capacity @(variantStock > 0 ? $"(Còn {variantStock})" : "(Hết hàng)")
+                                </button>
+                            }
+                        </div>
+                        <input type="hidden" id="selectedCapacity" value="" />
+                        <input type="hidden" id="selectedVariantPrice" value="@Model.Price" />
+                        <input type="hidden" id="selectedVariantStock" value="@Model.Stock" />
+                        <input type="hidden" id="basePrice" value="@Model.Price" />
+                        <input type="hidden" id="baseStock" value="@Model.Stock" />
+                    }
                 }
 
                 <div class="action-row">
@@ -165,10 +192,6 @@
                 @if (!string.IsNullOrEmpty(Model.Origin))
                 {
                     <tr><th>Xuất xứ</th><td>@Model.Origin</td></tr>
-                }
-                @if (!string.IsNullOrEmpty(Model.Capacity))
-                {
-                    <tr><th>Dung tích</th><td>@Model.Capacity</td></tr>
                 }
                 @if (!string.IsNullOrEmpty(Model.ExpiryDate))
                 {
@@ -239,11 +262,57 @@ function updateThumbnailActive() {
     });
 }
 
+function selectVariant(btn, capacity, price, stock) {
+    // Remove active class from all variant buttons
+    document.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+    // Add active class to selected button
+    btn.classList.add('active');
+    
+    // Update hidden fields
+    document.getElementById('selectedCapacity').value = capacity;
+    document.getElementById('selectedVariantPrice').value = price || document.getElementById('basePrice').value;
+    document.getElementById('selectedVariantStock').value = stock;
+    
+    // Update price display
+    const priceEl = document.getElementById('productPrice');
+    if (price) {
+        priceEl.innerHTML = parseFloat(price).toLocaleString('vi-VN') + 'đ';
+    } else {
+        priceEl.innerHTML = '@Model.Price.ToString("N0")đ';
+        @if (Model.OriginalPrice.HasValue && Model.OriginalPrice > Model.Price)
+        {
+            <text>
+            priceEl.innerHTML += '<del>@Model.OriginalPrice.Value.ToString("N0")đ</del>';
+            </text>
+        }
+    }
+    
+    // Update quantity if it exceeds stock
+    const qtyInput = document.getElementById('qtyInput');
+    const currentQty = parseInt(qtyInput.value);
+    if (currentQty > stock) {
+        qtyInput.value = stock > 0 ? stock : 1;
+    }
+    
+    // Update stock badge
+    const stockBadge = document.querySelector('.stock-badge');
+    if (stockBadge) {
+        if (stock > 0) {
+            stockBadge.textContent = 'Còn hàng';
+            stockBadge.style.background = '';
+        } else {
+            stockBadge.textContent = 'Hết hàng';
+            stockBadge.style.background = '#e74c3c';
+        }
+    }
+}
+
 function updateQty(change) {
     const input = document.getElementById('qtyInput');
+    const selectedStock = parseInt(document.getElementById('selectedVariantStock')?.value || '@Model.Stock');
     let qty = parseInt(input.value) + change;
     if (qty < 1) qty = 1;
-    if (qty > @Model.Stock) qty = @Model.Stock;
+    if (qty > selectedStock) qty = selectedStock;
     input.value = qty;
 }
 

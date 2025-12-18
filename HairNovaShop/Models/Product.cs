@@ -48,12 +48,12 @@ public class Product
     public string? Origin { get; set; }
 
     [StringLength(200)]
-    public string? Capacity { get; set; } // "30ml, 60ml, 80ml, 100ml"
-
-    [StringLength(200)]
     public string? ExpiryDate { get; set; }
 
-    public int Stock { get; set; } = 0;
+    public int Stock { get; set; } = 0; // Tổng tồn kho (tính từ variants nếu có)
+
+    // JSON string để lưu thông tin variants: [{"Capacity":"250ml","Price":null,"Stock":100},{"Capacity":"500ml","Price":null,"Stock":50}]
+    public string? StockByCapacity { get; set; }
 
     [Range(0, 5)]
     public double Rating { get; set; } = 0;
