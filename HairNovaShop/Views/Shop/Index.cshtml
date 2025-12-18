@@ -20,16 +20,16 @@
                 <h3 class="filter-title">Danh mục</h3>
                 <ul class="filter-list">
                     <li>
-                        <a asp-controller="Shop" asp-action="Index" class="filter-btn cat-btn @(string.IsNullOrEmpty(ViewBag.CategoryName) || ViewBag.CategoryName == "all" ? "active" : "")">
+                        <button class="filter-btn cat-btn @(string.IsNullOrEmpty(ViewBag.CategoryName) || ViewBag.CategoryName == "all" ? "active" : "")" data-category="all">
                             Tất cả
-                        </a>
+                        </button>
                     </li>
                     @foreach (var cat in categories.Where(c => c.IsActive).OrderBy(c => c.Name))
                     {
                         <li>
-                            <a asp-controller="Shop" asp-action="Index" asp-route-category="@cat.Name" class="filter-btn cat-btn @(ViewBag.CategoryName == cat.Name ? "active" : "")">
+                            <button class="filter-btn cat-btn @(ViewBag.CategoryName == cat.Name ? "active" : "")" data-category="@cat.Name">
                                 @cat.Name
-                            </a>
+                            </button>
                         </li>
                     }
                 </ul>

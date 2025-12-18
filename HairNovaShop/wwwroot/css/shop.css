@@ -317,6 +317,7 @@ nav {
 .shop .shop-header {
     width: 100%;
     padding: 120px 0 0px;
+    margin-top: calc(-1 * (var(--top-bar-height) + var(--header-height) + 20px));
     background: var(--bs-light-blue);
 }
 

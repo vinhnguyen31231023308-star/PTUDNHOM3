@@ -39,13 +39,21 @@ document.addEventListener('DOMContentLoaded', function () {
     if (userBtn && userDropdown) {
         // Toggle dropdown khi click vào icon user
         userBtn.addEventListener('click', function (e) {
+            e.preventDefault();
             e.stopPropagation();
             userDropdown.classList.toggle('active');
         });
 
         // Đóng dropdown khi click ra ngoài
         document.addEventListener('click', function (e) {
-            if (!userDropdown.contains(e.target)) {
+            if (userDropdown && !userDropdown.contains(e.target)) {
+                userDropdown.classList.remove('active');
+            }
+        });
+
+        // Đóng dropdown khi nhấn phím ESC
+        document.addEventListener('keydown', function (e) {
+            if (e.key === "Escape" && userDropdown && userDropdown.classList.contains('active')) {
                 userDropdown.classList.remove('active');
             }
         });

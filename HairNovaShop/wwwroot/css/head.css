@@ -241,8 +241,10 @@ nav {
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.3s ease;
-    z-index: 1000;
+    z-index: 1001;
     border: 1px solid rgba(0,0,0,0.05);
+    list-style: none;
+    margin: 0;
 }
 
     .user-dropdown-menu li {
@@ -257,6 +259,7 @@ nav {
         text-decoration: none;
         font-size: 14px;
         transition: all 0.2s;
+        white-space: nowrap;
     }
 
         .user-dropdown-menu a strong {
@@ -276,8 +279,7 @@ nav {
         border-top: 1px solid #eee;
     }
 
-.user-dropdown.active .user-dropdown-menu,
-.user-dropdown:hover .user-dropdown-menu {
+.user-dropdown.active .user-dropdown-menu {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);

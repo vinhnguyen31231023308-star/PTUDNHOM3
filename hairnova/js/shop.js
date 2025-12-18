@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+ document.addEventListener('DOMContentLoaded', function () {
     // 1. QUAN TRỌNG: Tìm vùng bao quanh trang Shop
     const shopScope = document.querySelector('.shop');
     if (!shopScope) return;

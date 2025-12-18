@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const priceValue = shopScope.querySelector("#priceValue");
     const sortTabs = shopScope.querySelectorAll(".sort-tab");
     const brandCheckboxes = shopScope.querySelectorAll(".brand-checkbox");
+    const catButtons = shopScope.querySelectorAll(".cat-btn");
 
     // Format price
     function formatPrice(v) {
@@ -18,6 +19,26 @@ document.addEventListener('DOMContentLoaded', function () {
             priceValue.textContent = formatPrice(Number(priceRange.value));
         });
     }
+
+    // Category buttons - redirect with category parameter
+    catButtons.forEach(btn => {
+        btn.addEventListener("click", function() {
+            // Remove active class from all buttons
+            catButtons.forEach(b => b.classList.remove("active"));
+            // Add active class to clicked button
+            this.classList.add("active");
+            
+            const category = this.dataset.category;
+            const url = new URL(window.location.href);
+            if (category === "all") {
+                url.searchParams.delete('category');
+            } else {
+                url.searchParams.set('category', category);
+            }
+            url.searchParams.delete('page'); // Reset to page 1 when filtering
+            window.location.href = url.toString();
+        });
+    });
 
     // Sort tabs - redirect with sort parameter
     sortTabs.forEach(tab => {
