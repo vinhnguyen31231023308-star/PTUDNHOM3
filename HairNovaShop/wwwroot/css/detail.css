@@ -316,6 +316,7 @@ nav {
 /* BREADCRUMB */
 .page-header {
     padding: 150px 0 10px;
+    margin-top: calc(-1 * (var(--top-bar-height) + var(--header-height) + 20px));
     background-color: var(--bs-light-bg);
     text-align: center;
 }
@@ -329,12 +330,24 @@ nav {
 }
 
 .breadcrumb {
+    display: flex;
     justify-content: center;
+    align-items: center;
     gap: 10px;
     font-size: 0.9rem;
     color: var(--text-gray);
     margin: 0;
 }
+
+    .breadcrumb a {
+        color: var(--text-gray);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+        .breadcrumb a:hover {
+            color: var(--bs-primary);
+        }
 
     .breadcrumb span {
         color: var(--bs-primary);
