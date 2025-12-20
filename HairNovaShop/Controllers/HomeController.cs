@@ -19,30 +19,38 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var featuredProducts = await _context.Products
+        // Load all featured products for filtering by category
+        var allFeaturedProducts = await _context.Products
             .Include(p => p.Category)
             .Where(p => p.IsFeatured && p.IsActive)
             .OrderByDescending(p => p.CreatedAt)
-            .Take(8)
             .ToListAsync();
 
         var newProducts = await _context.Products
             .Include(p => p.Category)
             .Where(p => p.IsNew && p.IsActive)
             .OrderByDescending(p => p.CreatedAt)
-            .Take(8)
+            .Take(10)
             .ToListAsync();
 
         var onSaleProducts = await _context.Products
             .Include(p => p.Category)
             .Where(p => p.OnSale && p.IsActive)
             .OrderByDescending(p => p.CreatedAt)
-            .Take(8)
+            .Take(10)
             .ToListAsync();
 
-        ViewBag.FeaturedProducts = featuredProducts;
+        // Load all active categories for tabs and category section
+        var allCategories = await _context.Categories
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.Name)
+            .ToListAsync();
+
+        ViewBag.AllFeaturedProducts = allFeaturedProducts;
         ViewBag.NewProducts = newProducts;
         ViewBag.OnSaleProducts = onSaleProducts;
+        ViewBag.Categories = allCategories.Take(4).ToList(); // For category section
+        ViewBag.AllCategories = allCategories; // For product tabs
 
         return View();
     }
