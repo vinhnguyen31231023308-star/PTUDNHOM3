@@ -251,9 +251,25 @@ nav {
         transition: color 0.3s ease;
     }
 
+        nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 3px;
+            bottom: 0;
+            left: 0;
+            background-color: var(--bs-secondary);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
         nav a:hover, nav a.active {
             color: var(--bs-primary);
         }
+
+            nav a:hover::after {
+                width: 100%;
+            }
 
 .header-actions {
     flex: 1;
@@ -317,7 +333,6 @@ nav {
 .shop .shop-header {
     width: 100%;
     padding: 120px 0 0px;
-    margin-top: calc(-1 * (var(--top-bar-height) + var(--header-height) + 20px));
     background: var(--bs-light-blue);
 }
 
@@ -755,193 +770,94 @@ nav {
 }
 
 
-/*FOOTER  */
-
-.footer-verb-style {
-    font-family: "Roboto", sans-serif;
-    /* Phần trên nền xanh nhạt */
-    background-color: var(--bs-light-blue);
-    color: #444;
-    border-top: 5px solid var(--bs-primary);
-}
-
-/* --- PHẦN TRÊN (INFO & LINKS) --- */
-.footer-heading {
-    font-weight: 900;
-    font-size: 28px;
-    letter-spacing: -1px;
-    color: var(--bs-primary);
-}
-
-.link-heading {
-    font-weight: 700;
-    font-size: 18px;
-    color: var(--bs-primary);
-    margin-bottom: 20px;
-}
-
-.footer-message-box {
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    border-left: 5px solid var(--bs-secondary);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-}
-
-    .footer-message-box p {
-        margin: 0;
-        font-style: italic;
-        font-size: 15px;
-        color: #555;
-        line-height: 1.5;
-    }
-
-.footer-socials {
-    display: flex;
-    gap: 15px;
-}
-
-.social-circle {
-    width: 40px;
-    height: 40px;
-    background: #fff;
-    border: 1px solid var(--bs-primary);
-    border-radius: 50%;
+/* =========================================
+   CAPACITY MODAL STYLES
+   ========================================= */
+#capacityModal,
+#capacityModalBuyNow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--bs-primary);
-    transition: 0.4s;
 }
 
-    .social-circle:hover {
-        background: var(--bs-primary);
-        color: #fff;
-        transform: rotate(360deg);
-    }
-
-.footer-links {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+#capacityModal > div,
+#capacityModalBuyNow > div {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
-    .footer-links li {
-        margin-bottom: 10px;
-    }
+#capacityModal h3,
+#capacityModalBuyNow h3 {
+    margin: 0 0 16px 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
 
-    .footer-links a {
-        color: #666;
-        text-decoration: none;
-        font-size: 15px;
-        font-weight: 500;
-        transition: 0.3s;
-    }
+#capacityOptions,
+#capacityOptionsBuyNow {
+    margin-bottom: 16px;
+}
 
-        .footer-links a:hover {
-            color: var(--bs-primary);
-            padding-left: 5px;
-        }
-
-
-/* 2. Phần Sóng Nước (Cầu nối) */
-.waves-container {
-    position: relative;
+.capacity-option-btn,
+.capacity-option-btn-buynow {
     width: 100%;
-    height: 100px;
-    margin-top: 10px;
-    margin-bottom: -1px; 
-    z-index: 2;
-    pointer-events: none;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
 }
 
-.waves {
-    width: 100%;
-    height: 100px;
+.capacity-option-btn:hover,
+.capacity-option-btn-buynow:hover {
+    border-color: #0061E1;
+    background: #f4f8ff;
 }
 
-/* Animation sóng */
-.parallax > use {
-    animation: move-forever 25s cubic-bezier(.55, .5, .45, .5) infinite;
+.capacity-option-btn > div:first-child,
+.capacity-option-btn-buynow > div:first-child {
+    font-weight: 600;
+    color: #111827;
 }
 
-    .parallax > use:nth-child(1) {
-        animation-delay: -1s;
-        animation-duration: 7s;
-    }
-
-    .parallax > use:nth-child(2) {
-        animation-delay: -2s;
-        animation-duration: 10s;
-    }
-
-    .parallax > use:nth-child(3) {
-        animation-delay: -3s;
-        animation-duration: 13s;
-    }
-
-    .parallax > use:nth-child(4) {
-        animation-delay: -4s;
-        animation-duration: 20s;
-    }
-
-@keyframes move-forever {
-    0% {
-        transform: translate3d(-90px, 0, 0);
-    }
-
-    100% {
-        transform: translate3d(85px, 0, 0);
-    }
+.capacity-option-btn > div:last-child,
+.capacity-option-btn-buynow > div:last-child {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-top: 4px;
 }
 
-
-/* 3. Phần Chân Trang (Nền tối) */
-.footer-bottom-dark {
-    background-color: var(--bs-primary-dark);
-    color: #fff;
-    padding: 20px 0 40px;
-    position: relative;
-    z-index: 6; /* Nằm trên sóng */
+#cancelCapacityBtn,
+#cancelCapacityBtnBuyNow {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
 }
 
-.big-brand-box {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+#cancelCapacityBtn:hover,
+#cancelCapacityBtnBuyNow:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
 }
-
-.brand-icon {
-    font-size: 3rem;
-    margin-bottom: 10px;
-}
-
-.brand-name {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin: 0;
-    letter-spacing: 2px;
-}
-
-.brand-slogan {
-    font-size: 1rem;
-    opacity: 0.8;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-}
-
-.copyright-text {
-    font-size: 0.8rem;
-    opacity: 0.6;
-    margin-top: 30px;
-}
-
-.footer-brand-img {
-    max-width: 400px; /* Độ rộng tối đa của logo */
-    height: auto; /* Chiều cao tự động theo tỷ lệ */
-    margin-top: 20px;
-    margin-bottom: 10px;
-    display: inline-block;
-}
-

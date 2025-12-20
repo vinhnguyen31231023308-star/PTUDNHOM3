@@ -19,6 +19,9 @@ builder.Services.Configure<EmailSettings>(
 // Add Email Service
 builder.Services.AddScoped<IEmailService, EmailService>();
 
+// Add Cart Service
+builder.Services.AddScoped<ICartService, CartService>();
+
 // Add Session
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
