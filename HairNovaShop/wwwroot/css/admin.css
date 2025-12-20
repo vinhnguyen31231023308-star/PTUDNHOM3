@@ -567,6 +567,14 @@
     margin: 0;
 }
 
+.admin-card-body {
+    padding: 1rem 0;
+}
+
+.admin-card-body canvas {
+    max-height: 400px;
+}
+
 .admin-btn-primary {
     background-color: var(--admin-primary);
     border-color: var(--admin-primary);

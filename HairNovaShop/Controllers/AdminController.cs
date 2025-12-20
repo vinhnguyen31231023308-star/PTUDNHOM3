@@ -740,4 +740,406 @@ public class AdminController : Controller
             _ => status
         };
     }
+
+    // ==================== REPORTS & STATISTICS ====================
+
+    // GET: Admin/Reports
+    public async Task<IActionResult> Reports(DateTime? fromDate, DateTime? toDate)
+    {
+        var now = DateTime.Now;
+        var today = now.Date;
+        var thisMonth = new DateTime(now.Year, now.Month, 1);
+        var lastMonth = thisMonth.AddMonths(-1);
+        var thisYear = new DateTime(now.Year, 1, 1);
+        var last7Days = today.AddDays(-7);
+        var last30Days = today.AddDays(-30);
+
+        // Date filter
+        DateTime? filterStartDate = null;
+        DateTime? filterEndDate = null;
+        bool hasDateFilter = false;
+
+        if (fromDate.HasValue || toDate.HasValue)
+        {
+            hasDateFilter = true;
+            filterStartDate = fromDate?.Date ?? DateTime.MinValue;
+            filterEndDate = toDate?.Date.AddDays(1).AddTicks(-1) ?? DateTime.MaxValue;
+            
+            ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
+            ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
+            ViewBag.FromDateDisplay = fromDate?.ToString("dd/MM/yyyy");
+            ViewBag.ToDateDisplay = toDate?.ToString("dd/MM/yyyy");
+        }
+        else
+        {
+            ViewBag.FromDate = "";
+            ViewBag.ToDate = "";
+            ViewBag.FromDateDisplay = "";
+            ViewBag.ToDateDisplay = "";
+        }
+        ViewBag.FilterActive = hasDateFilter;
+
+        // Revenue Statistics
+        var totalRevenueQuery = _context.Orders.Where(o => o.Status == "completed");
+        if (hasDateFilter)
+        {
+            totalRevenueQuery = totalRevenueQuery.Where(o => o.CreatedAt >= filterStartDate && o.CreatedAt <= filterEndDate);
+        }
+        var totalRevenue = await totalRevenueQuery.SumAsync(o => (decimal?)o.Total) ?? 0;
+
+        var todayRevenueQuery = _context.Orders.Where(o => o.Status == "completed" && o.CreatedAt >= today);
+        if (hasDateFilter)
+        {
+            todayRevenueQuery = todayRevenueQuery.Where(o => o.CreatedAt >= filterStartDate && o.CreatedAt <= filterEndDate);
+        }
+        var todayRevenue = await todayRevenueQuery.SumAsync(o => (decimal?)o.Total) ?? 0;
+
+        var thisMonthRevenueQuery = _context.Orders.Where(o => o.Status == "completed" && o.CreatedAt >= thisMonth);
+        if (hasDateFilter)
+        {
+            thisMonthRevenueQuery = thisMonthRevenueQuery.Where(o => o.CreatedAt >= filterStartDate && o.CreatedAt <= filterEndDate);
+        }
+        var thisMonthRevenue = await thisMonthRevenueQuery.SumAsync(o => (decimal?)o.Total) ?? 0;
+
+        var lastMonthRevenueQuery = _context.Orders.Where(o => o.Status == "completed" && o.CreatedAt >= lastMonth && o.CreatedAt < thisMonth);
+        if (hasDateFilter)
+        {
+            lastMonthRevenueQuery = lastMonthRevenueQuery.Where(o => o.CreatedAt >= filterStartDate && o.CreatedAt <= filterEndDate);
+        }
+        var lastMonthRevenue = await lastMonthRevenueQuery.SumAsync(o => (decimal?)o.Total) ?? 0;
+
+        // Revenue by last 12 months for chart (or by filter range if filtered)
+        var monthlyRevenue = new List<decimal>();
+        var monthlyLabels = new List<string>();
+        
+        if (hasDateFilter)
+        {
+            // If filtered, show daily data within the range
+            var currentDate = filterStartDate.Value;
+            var endDate = filterEndDate.Value;
+            var daysDiff = (endDate - currentDate).Days;
+            
+            // Limit to maximum 90 days for performance
+            if (daysDiff > 90)
+            {
+                // Group by week if more than 90 days
+                while (currentDate <= endDate)
+                {
+                    var weekEnd = currentDate.AddDays(6);
+                    if (weekEnd > endDate) weekEnd = endDate;
+                    
+                    var weekRevenue = await _context.Orders
+                        .Where(o => o.Status == "completed" && o.CreatedAt >= currentDate && o.CreatedAt <= weekEnd)
+                        .SumAsync(o => (decimal?)o.Total) ?? 0;
+                    monthlyRevenue.Add(weekRevenue);
+                    monthlyLabels.Add(currentDate.ToString("dd/MM") + " - " + weekEnd.ToString("dd/MM"));
+                    
+                    currentDate = weekEnd.AddDays(1);
+                }
+            }
+            else
+            {
+                // Daily data
+                while (currentDate <= endDate)
+                {
+                    var dayEnd = currentDate.AddDays(1).AddTicks(-1);
+                    var dayRevenue = await _context.Orders
+                        .Where(o => o.Status == "completed" && o.CreatedAt >= currentDate && o.CreatedAt <= dayEnd)
+                        .SumAsync(o => (decimal?)o.Total) ?? 0;
+                    monthlyRevenue.Add(dayRevenue);
+                    monthlyLabels.Add(currentDate.ToString("dd/MM"));
+                    
+                    currentDate = currentDate.AddDays(1);
+                }
+            }
+        }
+        else
+        {
+            // Default: last 12 months
+            for (int i = 11; i >= 0; i--)
+            {
+                var monthStart = new DateTime(now.Year, now.Month, 1).AddMonths(-i);
+                var monthEnd = monthStart.AddMonths(1);
+                var monthRevenue = await _context.Orders
+                    .Where(o => o.Status == "completed" && o.CreatedAt >= monthStart && o.CreatedAt < monthEnd)
+                    .SumAsync(o => (decimal?)o.Total) ?? 0;
+                monthlyRevenue.Add(monthRevenue);
+                monthlyLabels.Add(monthStart.ToString("MM/yyyy"));
+            }
+        }
+
+        // Order Statistics
+        var allOrdersQuery = _context.Orders.AsQueryable();
+        if (hasDateFilter)
+        {
+            allOrdersQuery = allOrdersQuery.Where(o => o.CreatedAt >= filterStartDate && o.CreatedAt <= filterEndDate);
+        }
+        var totalOrders = await allOrdersQuery.CountAsync();
+        
+        var completedOrdersQuery = _context.Orders.Where(o => o.Status == "completed");
+        if (hasDateFilter)
+        {
+            completedOrdersQuery = completedOrdersQuery.Where(o => o.CreatedAt >= filterStartDate && o.CreatedAt <= filterEndDate);
+        }
+        var completedOrders = await completedOrdersQuery.CountAsync();
+        
+        var confirmedOrdersQuery = _context.Orders.Where(o => o.Status == "confirmed");
+        if (hasDateFilter)
+        {
+            confirmedOrdersQuery = confirmedOrdersQuery.Where(o => o.CreatedAt >= filterStartDate && o.CreatedAt <= filterEndDate);
+        }
+        var confirmedOrders = await confirmedOrdersQuery.CountAsync();
+        
+        var pendingOrdersQuery = _context.Orders.Where(o => o.Status == "pending");
+        if (hasDateFilter)
+        {
+            pendingOrdersQuery = pendingOrdersQuery.Where(o => o.CreatedAt >= filterStartDate && o.CreatedAt <= filterEndDate);
+        }
+        var pendingOrders = await pendingOrdersQuery.CountAsync();
+        
+        var shippingOrdersQuery = _context.Orders.Where(o => o.Status == "shipping");
+        if (hasDateFilter)
+        {
+            shippingOrdersQuery = shippingOrdersQuery.Where(o => o.CreatedAt >= filterStartDate && o.CreatedAt <= filterEndDate);
+        }
+        var shippingOrders = await shippingOrdersQuery.CountAsync();
+        
+        var cancelledOrdersQuery = _context.Orders.Where(o => o.Status == "cancelled");
+        if (hasDateFilter)
+        {
+            cancelledOrdersQuery = cancelledOrdersQuery.Where(o => o.CreatedAt >= filterStartDate && o.CreatedAt <= filterEndDate);
+        }
+        var cancelledOrders = await cancelledOrdersQuery.CountAsync();
+        
+        var todayOrdersQuery = _context.Orders.Where(o => o.CreatedAt >= today);
+        if (hasDateFilter)
+        {
+            todayOrdersQuery = todayOrdersQuery.Where(o => o.CreatedAt >= filterStartDate && o.CreatedAt <= filterEndDate);
+        }
+        var todayOrders = await todayOrdersQuery.CountAsync();
+        
+        var thisMonthOrdersQuery = _context.Orders.Where(o => o.CreatedAt >= thisMonth);
+        if (hasDateFilter)
+        {
+            thisMonthOrdersQuery = thisMonthOrdersQuery.Where(o => o.CreatedAt >= filterStartDate && o.CreatedAt <= filterEndDate);
+        }
+        var thisMonthOrders = await thisMonthOrdersQuery.CountAsync();
+
+        // Orders by status for chart
+        var ordersByStatus = new Dictionary<string, int>
+        {
+            { "Hoàn thành", completedOrders },
+            { "Đang giao hàng", shippingOrders },
+            { "Đã xác nhận", confirmedOrders },
+            { "Chờ xác nhận", pendingOrders },
+            { "Đã hủy", cancelledOrders }
+        };
+
+        // Orders by last 30 days for chart (or by filter range if filtered)
+        var dailyOrders = new List<int>();
+        var dailyLabels = new List<string>();
+        
+        if (hasDateFilter)
+        {
+            var currentDate = filterStartDate.Value;
+            var endDate = filterEndDate.Value;
+            var daysDiff = (endDate - currentDate).Days;
+            
+            // Limit to maximum 90 days for performance
+            if (daysDiff > 90)
+            {
+                // Group by week if more than 90 days
+                while (currentDate <= endDate)
+                {
+                    var weekEnd = currentDate.AddDays(6);
+                    if (weekEnd > endDate) weekEnd = endDate;
+                    
+                    var weekOrderCount = await _context.Orders
+                        .CountAsync(o => o.CreatedAt >= currentDate && o.CreatedAt <= weekEnd);
+                    dailyOrders.Add(weekOrderCount);
+                    dailyLabels.Add(currentDate.ToString("dd/MM") + " - " + weekEnd.ToString("dd/MM"));
+                    
+                    currentDate = weekEnd.AddDays(1);
+                }
+            }
+            else
+            {
+                // Daily data
+                while (currentDate <= endDate)
+                {
+                    var dayEnd = currentDate.AddDays(1).AddTicks(-1);
+                    var dayOrderCount = await _context.Orders
+                        .CountAsync(o => o.CreatedAt >= currentDate && o.CreatedAt <= dayEnd);
+                    dailyOrders.Add(dayOrderCount);
+                    dailyLabels.Add(currentDate.ToString("dd/MM"));
+                    
+                    currentDate = currentDate.AddDays(1);
+                }
+            }
+        }
+        else
+        {
+            // Default: last 30 days
+            for (int i = 29; i >= 0; i--)
+            {
+                var day = today.AddDays(-i);
+                var dayStart = day;
+                var dayEnd = day.AddDays(1);
+                var dayOrderCount = await _context.Orders
+                    .CountAsync(o => o.CreatedAt >= dayStart && o.CreatedAt < dayEnd);
+                dailyOrders.Add(dayOrderCount);
+                dailyLabels.Add(day.ToString("dd/MM"));
+            }
+        }
+
+        // Customer Statistics
+        var totalCustomersQuery = _context.Users.AsQueryable();
+        if (hasDateFilter)
+        {
+            totalCustomersQuery = totalCustomersQuery.Where(u => u.CreatedAt >= filterStartDate && u.CreatedAt <= filterEndDate);
+        }
+        var totalCustomers = await totalCustomersQuery.CountAsync();
+        
+        var newCustomersThisMonthQuery = _context.Users.Where(u => u.CreatedAt >= thisMonth);
+        if (hasDateFilter)
+        {
+            newCustomersThisMonthQuery = newCustomersThisMonthQuery.Where(u => u.CreatedAt >= filterStartDate && u.CreatedAt <= filterEndDate);
+        }
+        var newCustomersThisMonth = await newCustomersThisMonthQuery.CountAsync();
+        
+        var newCustomersLastMonthQuery = _context.Users.Where(u => u.CreatedAt >= lastMonth && u.CreatedAt < thisMonth);
+        if (hasDateFilter)
+        {
+            newCustomersLastMonthQuery = newCustomersLastMonthQuery.Where(u => u.CreatedAt >= filterStartDate && u.CreatedAt <= filterEndDate);
+        }
+        var newCustomersLastMonth = await newCustomersLastMonthQuery.CountAsync();
+        
+        var customersWithOrdersQuery = _context.Orders.Where(o => o.UserId != null);
+        if (hasDateFilter)
+        {
+            customersWithOrdersQuery = customersWithOrdersQuery.Where(o => o.CreatedAt >= filterStartDate && o.CreatedAt <= filterEndDate);
+        }
+        var customersWithOrders = await customersWithOrdersQuery
+            .Select(o => o.UserId)
+            .Distinct()
+            .CountAsync();
+
+        // Customer registration by last 12 months for chart (or by filter range if filtered)
+        var monthlyCustomers = new List<int>();
+        var monthlyCustomerLabels = new List<string>();
+        
+        if (hasDateFilter)
+        {
+            var currentDate = filterStartDate.Value;
+            var endDate = filterEndDate.Value;
+            var daysDiff = (endDate - currentDate).Days;
+            
+            // Limit to maximum 90 days for performance
+            if (daysDiff > 90)
+            {
+                // Group by week if more than 90 days
+                while (currentDate <= endDate)
+                {
+                    var weekEnd = currentDate.AddDays(6);
+                    if (weekEnd > endDate) weekEnd = endDate;
+                    
+                    var weekCustomerCount = await _context.Users
+                        .CountAsync(u => u.CreatedAt >= currentDate && u.CreatedAt <= weekEnd);
+                    monthlyCustomers.Add(weekCustomerCount);
+                    monthlyCustomerLabels.Add(currentDate.ToString("dd/MM") + " - " + weekEnd.ToString("dd/MM"));
+                    
+                    currentDate = weekEnd.AddDays(1);
+                }
+            }
+            else
+            {
+                // Daily data
+                while (currentDate <= endDate)
+                {
+                    var dayEnd = currentDate.AddDays(1).AddTicks(-1);
+                    var dayCustomerCount = await _context.Users
+                        .CountAsync(u => u.CreatedAt >= currentDate && u.CreatedAt <= dayEnd);
+                    monthlyCustomers.Add(dayCustomerCount);
+                    monthlyCustomerLabels.Add(currentDate.ToString("dd/MM"));
+                    
+                    currentDate = currentDate.AddDays(1);
+                }
+            }
+        }
+        else
+        {
+            // Default: last 12 months
+            for (int i = 11; i >= 0; i--)
+            {
+                var monthStart = new DateTime(now.Year, now.Month, 1).AddMonths(-i);
+                var monthEnd = monthStart.AddMonths(1);
+                var monthCustomerCount = await _context.Users
+                    .CountAsync(u => u.CreatedAt >= monthStart && u.CreatedAt < monthEnd);
+                monthlyCustomers.Add(monthCustomerCount);
+                monthlyCustomerLabels.Add(monthStart.ToString("MM/yyyy"));
+            }
+        }
+
+        // Top products by revenue
+        var topProductsQuery = _context.OrderItems
+            .Include(oi => oi.Order)
+            .Include(oi => oi.Product)
+            .Where(oi => oi.Order.Status == "completed");
+        
+        if (hasDateFilter)
+        {
+            topProductsQuery = topProductsQuery.Where(oi => oi.Order.CreatedAt >= filterStartDate && oi.Order.CreatedAt <= filterEndDate);
+        }
+        
+        var topProductsData = await topProductsQuery
+            .GroupBy(oi => new { oi.ProductId, oi.Product!.Name })
+            .Select(g => new
+            {
+                ProductName = g.Key.Name,
+                Revenue = g.Sum(oi => oi.Price * oi.Quantity),
+                Quantity = g.Sum(oi => oi.Quantity)
+            })
+            .OrderByDescending(x => x.Revenue)
+            .Take(10)
+            .ToListAsync();
+        
+        var topProducts = topProductsData.Select(x =>
+        {
+            var dict = new Dictionary<string, object>();
+            dict["ProductName"] = x.ProductName;
+            dict["Revenue"] = (decimal)x.Revenue;
+            dict["Quantity"] = (int)x.Quantity;
+            return dict;
+        }).ToList();
+
+        ViewBag.TotalRevenue = totalRevenue;
+        ViewBag.TodayRevenue = todayRevenue;
+        ViewBag.ThisMonthRevenue = thisMonthRevenue;
+        ViewBag.LastMonthRevenue = lastMonthRevenue;
+        ViewBag.MonthlyRevenue = monthlyRevenue;
+        ViewBag.MonthlyLabels = monthlyLabels;
+
+        ViewBag.TotalOrders = totalOrders;
+        ViewBag.CompletedOrders = completedOrders;
+        ViewBag.ConfirmedOrders = confirmedOrders;
+        ViewBag.PendingOrders = pendingOrders;
+        ViewBag.ShippingOrders = shippingOrders;
+        ViewBag.CancelledOrders = cancelledOrders;
+        ViewBag.TodayOrders = todayOrders;
+        ViewBag.ThisMonthOrders = thisMonthOrders;
+        ViewBag.OrdersByStatus = ordersByStatus;
+        ViewBag.DailyOrders = dailyOrders;
+        ViewBag.DailyLabels = dailyLabels;
+
+        ViewBag.TotalCustomers = totalCustomers;
+        ViewBag.NewCustomersThisMonth = newCustomersThisMonth;
+        ViewBag.NewCustomersLastMonth = newCustomersLastMonth;
+        ViewBag.CustomersWithOrders = customersWithOrders;
+        ViewBag.MonthlyCustomers = monthlyCustomers;
+        ViewBag.MonthlyCustomerLabels = monthlyCustomerLabels;
+
+        ViewBag.TopProducts = topProducts;
+
+        return View();
+    }
 }
