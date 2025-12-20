@@ -474,4 +474,266 @@ public class AccountController : Controller
         var random = new Random();
         return random.Next(100000, 999999).ToString();
     }
+
+    // GET: Account/Index - User Account Information Page
+    public async Task<IActionResult> Index()
+    {
+        var userIdStr = HttpContext.Session.GetString("UserId");
+        if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+        {
+            return RedirectToAction("Login");
+        }
+
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        // Get user orders
+        var orders = await _context.Orders
+            .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+            .Where(o => o.UserId == userId)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+
+        // Calculate statistics
+        var processingOrders = orders.Count(o => o.Status == "pending" || o.Status == "confirmed");
+        var shippingOrders = orders.Count(o => o.Status == "shipping");
+        var completedOrders = orders.Count(o => o.Status == "completed");
+
+        ViewBag.User = user;
+        ViewBag.Orders = orders;
+        ViewBag.ProcessingOrders = processingOrders;
+        ViewBag.ShippingOrders = shippingOrders;
+        ViewBag.CompletedOrders = completedOrders;
+
+        return View();
+    }
+
+    // POST: Account/UpdateProfile
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateProfile(string fullName, string phone)
+    {
+        var userIdStr = HttpContext.Session.GetString("UserId");
+        if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+        {
+            return Json(new { success = false, message = "Vui lòng đăng nhập" });
+        }
+
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return Json(new { success = false, message = "Không tìm thấy người dùng" });
+        }
+
+        user.FullName = fullName;
+        user.Phone = phone;
+        await _context.SaveChangesAsync();
+
+        // Update session
+        HttpContext.Session.SetString("FullName", fullName);
+
+        return Json(new { success = true, message = "Cập nhật thông tin thành công!" });
+    }
+
+    // POST: Account/ChangePassword
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword)
+    {
+        var userIdStr = HttpContext.Session.GetString("UserId");
+        if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+        {
+            return Json(new { success = false, message = "Vui lòng đăng nhập" });
+        }
+
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return Json(new { success = false, message = "Không tìm thấy người dùng" });
+        }
+
+        // Verify current password
+        if (!VerifyPassword(currentPassword, user.PasswordHash))
+        {
+            return Json(new { success = false, message = "Mật khẩu hiện tại không đúng" });
+        }
+
+        // Update password
+        user.PasswordHash = HashPassword(newPassword);
+        await _context.SaveChangesAsync();
+
+        return Json(new { success = true, message = "Đổi mật khẩu thành công!" });
+    }
+
+    // GET: Account/GetOrderDetails
+    [HttpGet]
+    public async Task<IActionResult> GetOrderDetails(int id)
+    {
+        var userIdStr = HttpContext.Session.GetString("UserId");
+        if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+        {
+            return Json(new { success = false, message = "Vui lòng đăng nhập" });
+        }
+
+        var order = await _context.Orders
+            .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+            .FirstOrDefaultAsync(o => o.Id == id && o.UserId == userId);
+
+        if (order == null)
+        {
+            return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
+        }
+
+        var orderItems = order.OrderItems.Select(oi => new
+        {
+            ProductName = oi.ProductName,
+            ProductImage = oi.Product?.MainImage ?? "/images/placeholder.png",
+            Quantity = oi.Quantity,
+            Price = oi.Price,
+            Capacity = oi.Capacity,
+            Total = oi.Subtotal
+        }).ToList();
+
+        var paymentMethodName = order.PaymentMethod switch
+        {
+            "cod" => "COD (Thanh toán khi nhận)",
+            "bank" => "Chuyển khoản",
+            "momo" => "Ví MoMo",
+            "vnpay" => "VNPAY",
+            _ => order.PaymentMethod
+        };
+
+        var statusName = order.Status switch
+        {
+            "pending" => "Chờ xác nhận",
+            "confirmed" => "Đã xác nhận",
+            "shipping" => "Đang giao hàng",
+            "completed" => "Giao thành công",
+            "cancelled" => "Đã hủy",
+            _ => order.Status
+        };
+
+        return Json(new
+        {
+            success = true,
+            order = new
+            {
+                Id = order.Id,
+                OrderCode = order.OrderCode,
+                CreatedAt = order.CreatedAt.ToString("dd/MM/yyyy"),
+                Status = order.Status,
+                StatusName = statusName,
+                Total = order.Total,
+                PaymentMethod = paymentMethodName,
+                ShippingAddress = order.ShippingAddress,
+                Items = orderItems
+            }
+        });
+    }
+
+    // GET: Account/GetOrders
+    [HttpGet]
+    public async Task<IActionResult> GetOrders()
+    {
+        var userIdStr = HttpContext.Session.GetString("UserId");
+        if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+        {
+            return Json(new { success = false, message = "Vui lòng đăng nhập" });
+        }
+
+        var orders = await _context.Orders
+            .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+            .Where(o => o.UserId == userId)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+
+        var ordersList = orders.Select(order => {
+            var firstItem = order.OrderItems.FirstOrDefault();
+            var statusName = order.Status switch
+            {
+                "pending" => "Chờ xác nhận",
+                "confirmed" => "Đã xác nhận",
+                "shipping" => "Đang giao hàng",
+                "completed" => "Giao thành công",
+                "cancelled" => "Đã hủy",
+                _ => order.Status
+            };
+
+            var paymentMethodName = order.PaymentMethod switch
+            {
+                "cod" => "COD (Thanh toán khi nhận)",
+                "bank" => "Chuyển khoản",
+                "momo" => "Ví MoMo",
+                "vnpay" => "VNPAY",
+                _ => order.PaymentMethod
+            };
+
+            return new
+            {
+                Id = order.Id,
+                OrderCode = order.OrderCode,
+                CreatedAt = order.CreatedAt.ToString("dd/MM/yyyy"),
+                Status = order.Status,
+                StatusName = statusName,
+                Total = order.Total,
+                PaymentMethod = paymentMethodName,
+                FirstProductName = firstItem?.ProductName ?? "Đơn hàng",
+                FirstProductImage = firstItem?.Product?.MainImage ?? "/images/placeholder.png",
+                ItemsCount = order.OrderItems.Count
+            };
+        }).ToList();
+
+        return Json(new { success = true, orders = ordersList });
+    }
+
+    // GET: Account/GetOrderByCode
+    [HttpGet]
+    public async Task<IActionResult> GetOrderByCode(string orderCode)
+    {
+        var userIdStr = HttpContext.Session.GetString("UserId");
+        if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+        {
+            return Json(new { success = false, message = "Vui lòng đăng nhập" });
+        }
+
+        var order = await _context.Orders
+            .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+            .FirstOrDefaultAsync(o => o.OrderCode == orderCode && o.UserId == userId);
+
+        if (order == null)
+        {
+            return Json(new { success = false, message = "Không tìm thấy đơn hàng với mã: " + orderCode });
+        }
+
+        var statusName = order.Status switch
+        {
+            "pending" => "Chờ xác nhận",
+            "confirmed" => "Đã xác nhận",
+            "shipping" => "Đang giao hàng",
+            "completed" => "Giao thành công",
+            "cancelled" => "Đã hủy",
+            _ => order.Status
+        };
+
+        return Json(new
+        {
+            success = true,
+            order = new
+            {
+                Id = order.Id,
+                OrderCode = order.OrderCode,
+                CreatedAt = order.CreatedAt.ToString("dd/MM/yyyy HH:mm"),
+                Status = order.Status,
+                StatusName = statusName,
+                Total = order.Total
+            }
+        });
+    }
 }

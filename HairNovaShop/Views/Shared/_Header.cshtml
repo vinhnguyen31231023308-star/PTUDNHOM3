@@ -66,8 +66,8 @@
                         <li><hr /></li>
                         <li><a asp-controller="Admin" asp-action="Index"><strong style="color: #dc3545;">🔐 Quản trị</strong></a></li>
                     }
-                    <li><a href="#">Thông tin tài khoản</a></li>
-                    <li><a href="#">Đơn hàng của tôi</a></li>
+                    <li><a asp-controller="Account" asp-action="Index">Thông tin tài khoản</a></li>
+                    <li><a asp-controller="Account" asp-action="Index" asp-fragment="orders">Đơn hàng của tôi</a></li>
                     <li><hr /></li>
                     <li><a asp-controller="Account" asp-action="Logout">Đăng xuất</a></li>
                 </ul>
