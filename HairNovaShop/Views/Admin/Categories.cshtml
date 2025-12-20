@@ -15,6 +15,13 @@
 </div>
 
 <div class="admin-card">
+    <div class="admin-card-header">
+        <h2 class="admin-card-title">Danh sách danh mục</h2>
+        <div class="input-group" style="width: 300px;">
+            <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+            <input type="text" id="searchInput" class="form-control" placeholder="Tìm tên danh mục, mô tả...">
+        </div>
+    </div>
     <div class="table-responsive">
         <table class="table table-hover">
             <thead>
@@ -64,3 +71,50 @@
         </table>
     </div>
 </div>
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const tableRows = document.querySelectorAll('tbody tr');
+    
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        let visibleCount = 0;
+        
+        tableRows.forEach(row => {
+            const categoryName = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+            const description = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
+            const id = row.querySelector('td:nth-child(1)')?.textContent.toLowerCase() || '';
+            
+            const matchesSearch = categoryName.includes(searchTerm) || 
+                                  description.includes(searchTerm) ||
+                                  id.includes(searchTerm);
+            
+            if (matchesSearch) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Show/hide no results message
+        const noResultsRow = document.getElementById('noResultsRow');
+        if (visibleCount === 0 && tableRows.length > 0) {
+            if (!noResultsRow) {
+                const tbody = document.querySelector('tbody');
+                const newRow = document.createElement('tr');
+                newRow.id = 'noResultsRow';
+                newRow.innerHTML = '<td colspan="6" class="text-center py-4 text-muted"><i class="fas fa-search me-2"></i>Không tìm thấy danh mục phù hợp</td>';
+                tbody.appendChild(newRow);
+            }
+        } else if (noResultsRow) {
+            noResultsRow.remove();
+        }
+    }
+    
+    searchInput.addEventListener('input', filterTable);
+});
+</script>
+}

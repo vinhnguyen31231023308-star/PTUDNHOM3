@@ -602,4 +602,142 @@ public class AdminController : Controller
         TempData["Success"] = $"Đã xóa danh mục {categoryName} thành công!";
         return RedirectToAction("Categories");
     }
+
+    // GET: Admin/Orders
+    public async Task<IActionResult> Orders()
+    {
+        var orders = await _context.Orders
+            .Include(o => o.OrderItems)
+            .Include(o => o.User)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+        return View(orders);
+    }
+
+    // GET: Admin/Orders/Details/{id}
+    public async Task<IActionResult> OrderDetails(int id)
+    {
+        var order = await _context.Orders
+            .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+            .Include(o => o.User)
+            .FirstOrDefaultAsync(o => o.Id == id);
+
+        if (order == null)
+        {
+            return NotFound();
+        }
+
+        return View(order);
+    }
+
+    // POST: Admin/Orders/UpdateStatus/{id}
+    [HttpPost]
+    [IgnoreAntiforgeryToken]
+    public async Task<IActionResult> UpdateOrderStatus(int id, string status)
+    {
+        var order = await _context.Orders.FindAsync(id);
+        if (order == null)
+        {
+            return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
+        }
+
+        // Validate status transition
+        var validTransition = IsValidStatusTransition(order.Status, status);
+        if (!validTransition.isValid)
+        {
+            return Json(new { success = false, message = validTransition.message });
+        }
+
+        var oldStatus = order.Status;
+        order.Status = status;
+        order.UpdatedAt = DateTime.Now;
+        await _context.SaveChangesAsync();
+
+        return Json(new { 
+            success = true, 
+            message = $"Đã cập nhật trạng thái đơn hàng {order.OrderCode} từ \"{GetStatusName(oldStatus)}\" thành \"{GetStatusName(status)}\"",
+            newStatus = status,
+            newStatusName = GetStatusName(status),
+            newStatusClass = GetStatusClass(status)
+        });
+    }
+
+    // Validate status transition logic
+    private (bool isValid, string message) IsValidStatusTransition(string currentStatus, string newStatus)
+    {
+        // Same status - no change needed
+        if (currentStatus == newStatus)
+        {
+            return (false, "Trạng thái không thay đổi");
+        }
+
+        // Completed orders cannot be changed
+        if (currentStatus == "completed")
+        {
+            return (false, "Đơn hàng đã hoàn thành không thể thay đổi trạng thái");
+        }
+
+        // Cancelled orders cannot be changed
+        if (currentStatus == "cancelled")
+        {
+            return (false, "Đơn hàng đã hủy không thể thay đổi trạng thái");
+        }
+
+        // Allow cancellation from any active status
+        if (newStatus == "cancelled")
+        {
+            return (true, "");
+        }
+
+        // Define valid transitions
+        var validTransitions = new Dictionary<string, List<string>>
+        {
+            { "pending", new List<string> { "confirmed", "cancelled" } },
+            { "confirmed", new List<string> { "shipping", "cancelled" } },
+            { "shipping", new List<string> { "completed", "cancelled" } }
+        };
+
+        if (validTransitions.TryGetValue(currentStatus, out var allowedStatuses))
+        {
+            if (allowedStatuses.Contains(newStatus))
+            {
+                return (true, "");
+            }
+            else
+            {
+                var currentName = GetStatusName(currentStatus);
+                var newName = GetStatusName(newStatus);
+                return (false, $"Không thể chuyển từ \"{currentName}\" sang \"{newName}\". Vui lòng thực hiện theo đúng quy trình!");
+            }
+        }
+
+        return (false, "Trạng thái không hợp lệ");
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "pending" => "bg-warning",
+            "confirmed" => "bg-info",
+            "shipping" => "bg-primary",
+            "completed" => "bg-success",
+            "cancelled" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetStatusName(string status)
+    {
+        return status switch
+        {
+            "pending" => "Chờ xác nhận",
+            "confirmed" => "Đã xác nhận",
+            "shipping" => "Đang giao hàng",
+            "completed" => "Hoàn thành",
+            "cancelled" => "Đã hủy",
+            _ => status
+        };
+    }
 }
