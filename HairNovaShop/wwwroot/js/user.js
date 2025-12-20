@@ -405,46 +405,181 @@ async function updateProfile() {
 // CHANGE PASSWORD
 // ==========================================
 async function changePassword() {
-    const currentPassword = document.getElementById('current-password')?.value;
-    const newPassword = document.getElementById('new-password')?.value;
-    const confirmPassword = document.getElementById('confirm-password')?.value;
+    const currentPasswordInput = document.getElementById('current-password');
+    const newPasswordInput = document.getElementById('new-password');
+    const confirmPasswordInput = document.getElementById('confirm-password');
 
-    if (!currentPassword || !newPassword || !confirmPassword) {
-        alert('Vui lòng điền đầy đủ thông tin');
+    const currentPassword = currentPasswordInput?.value.trim();
+    const newPassword = newPasswordInput?.value.trim();
+    const confirmPassword = confirmPasswordInput?.value.trim();
+
+    // Clear previous error states
+    [currentPasswordInput, newPasswordInput, confirmPasswordInput].forEach(input => {
+        if (input) {
+            input.style.borderColor = '';
+            input.style.boxShadow = '';
+        }
+    });
+
+    // Validation
+    if (!currentPassword) {
+        showPasswordError(currentPasswordInput, 'Vui lòng nhập mật khẩu hiện tại');
+        return;
+    }
+
+    if (!newPassword) {
+        showPasswordError(newPasswordInput, 'Vui lòng nhập mật khẩu mới');
+        return;
+    }
+
+    if (newPassword.length < 6) {
+        showPasswordError(newPasswordInput, 'Mật khẩu mới phải có ít nhất 6 ký tự');
+        return;
+    }
+
+    if (!confirmPassword) {
+        showPasswordError(confirmPasswordInput, 'Vui lòng xác nhận mật khẩu mới');
         return;
     }
 
     if (newPassword !== confirmPassword) {
-        alert('Mật khẩu mới và xác nhận mật khẩu không khớp');
+        showPasswordError(confirmPasswordInput, 'Mật khẩu mới và xác nhận mật khẩu không khớp');
         return;
+    }
+
+    // Show loading state
+    const submitButton = document.querySelector('#password-form button[onclick="changePassword()"]');
+    const originalButtonText = submitButton?.textContent;
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Đang xử lý...';
     }
 
     try {
         const formData = new FormData();
         formData.append('currentPassword', currentPassword);
         formData.append('newPassword', newPassword);
+        formData.append('confirmPassword', confirmPassword);
 
         const response = await fetch('/Account/ChangePassword', {
             method: 'POST',
-            body: formData,
-            headers: {
-                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
-            }
+            body: formData
         });
 
         const result = await response.json();
+        
         if (result.success) {
-            alert(result.message || 'Đổi mật khẩu thành công!');
-            document.getElementById('current-password').value = '';
-            document.getElementById('new-password').value = '';
-            document.getElementById('confirm-password').value = '';
+            // Success - show toast notification and clear form
+            showPasswordSuccess(result.message || 'Đổi mật khẩu thành công!');
+            currentPasswordInput.value = '';
+            newPasswordInput.value = '';
+            confirmPasswordInput.value = '';
         } else {
-            alert(result.message || 'Có lỗi xảy ra');
+            // Error - show error message
+            showPasswordError(null, result.message || 'Có lỗi xảy ra khi đổi mật khẩu');
+            // Also show error toast
+            showPasswordToast('error', 'Lỗi!', result.message || 'Có lỗi xảy ra khi đổi mật khẩu');
         }
     } catch (error) {
         console.error('Error changing password:', error);
-        alert('Có lỗi xảy ra khi đổi mật khẩu');
+        showPasswordError(null, 'Có lỗi xảy ra khi đổi mật khẩu. Vui lòng thử lại sau.');
+    } finally {
+        // Restore button state
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = originalButtonText || 'Đổi mật khẩu';
+        }
     }
+}
+
+function showPasswordError(input, message) {
+    // Show error message
+    let errorDiv = document.getElementById('password-error-message');
+    if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.id = 'password-error-message';
+        errorDiv.style.cssText = 'color: #ef4444; padding: 10px; margin-bottom: 15px; background: #ffebeb; border-radius: 8px; border-left: 4px solid #ef4444;';
+        const passwordForm = document.getElementById('password-form');
+        if (passwordForm) {
+            passwordForm.insertBefore(errorDiv, passwordForm.firstChild);
+        }
+    }
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+
+    // Highlight input field
+    if (input) {
+        input.style.borderColor = '#ef4444';
+        input.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.1)';
+        input.focus();
+    }
+
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+        if (errorDiv) {
+            errorDiv.style.display = 'none';
+        }
+        if (input) {
+            input.style.borderColor = '';
+            input.style.boxShadow = '';
+        }
+    }, 5000);
+}
+
+function showPasswordSuccess(message) {
+    // Remove any existing error message
+    const errorDiv = document.getElementById('password-error-message');
+    if (errorDiv) {
+        errorDiv.remove();
+    }
+
+    // Show toast notification
+    showPasswordToast('success', 'Thành công!', message);
+}
+
+function showPasswordToast(type, title, message) {
+    const toast = document.getElementById('passwordChangeToast');
+    if (!toast) return;
+
+    const toastTitle = toast.querySelector('.toast-title');
+    const toastMessage = toast.querySelector('.toast-message');
+    const toastIcon = toast.querySelector('.toast-icon i');
+
+    // Update content
+    toastTitle.textContent = title;
+    toastMessage.textContent = message;
+
+    // Update icon and class
+    toast.classList.remove('success', 'error', 'hide');
+    toast.classList.add(type);
+
+    if (type === 'success') {
+        toastIcon.className = 'fas fa-check-circle';
+    } else {
+        toastIcon.className = 'fas fa-exclamation-circle';
+    }
+
+    // Show toast
+    toast.style.display = 'flex';
+    setTimeout(() => {
+        toast.style.animation = 'slideInRight 0.5s ease forwards';
+    }, 10);
+
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+        closePasswordToast();
+    }, 5000);
+}
+
+function closePasswordToast() {
+    const toast = document.getElementById('passwordChangeToast');
+    if (!toast) return;
+
+    toast.classList.add('hide');
+    setTimeout(() => {
+        toast.style.display = 'none';
+        toast.classList.remove('hide');
+    }, 500);
 }
 
 if (history.scrollRestoration) {

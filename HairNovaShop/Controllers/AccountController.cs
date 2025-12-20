@@ -541,13 +541,34 @@ public class AccountController : Controller
 
     // POST: Account/ChangePassword
     [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword)
+    [IgnoreAntiforgeryToken]
+    public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword, string confirmPassword)
     {
         var userIdStr = HttpContext.Session.GetString("UserId");
         if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
         {
             return Json(new { success = false, message = "Vui lòng đăng nhập" });
+        }
+
+        // Validation
+        if (string.IsNullOrWhiteSpace(currentPassword))
+        {
+            return Json(new { success = false, message = "Vui lòng nhập mật khẩu hiện tại" });
+        }
+
+        if (string.IsNullOrWhiteSpace(newPassword))
+        {
+            return Json(new { success = false, message = "Vui lòng nhập mật khẩu mới" });
+        }
+
+        if (newPassword.Length < 6)
+        {
+            return Json(new { success = false, message = "Mật khẩu mới phải có ít nhất 6 ký tự" });
+        }
+
+        if (!string.IsNullOrEmpty(confirmPassword) && newPassword != confirmPassword)
+        {
+            return Json(new { success = false, message = "Mật khẩu mới và xác nhận mật khẩu không khớp" });
         }
 
         var user = await _context.Users.FindAsync(userId);
@@ -560,6 +581,12 @@ public class AccountController : Controller
         if (!VerifyPassword(currentPassword, user.PasswordHash))
         {
             return Json(new { success = false, message = "Mật khẩu hiện tại không đúng" });
+        }
+
+        // Check if new password is same as current password
+        if (VerifyPassword(newPassword, user.PasswordHash))
+        {
+            return Json(new { success = false, message = "Mật khẩu mới phải khác với mật khẩu hiện tại" });
         }
 
         // Update password
