@@ -21,8 +21,94 @@ public class AdminController : Controller
     }
 
     // GET: Admin
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
+        var now = DateTime.Now;
+        var today = now.Date;
+        var thisMonth = new DateTime(now.Year, now.Month, 1);
+        var lastMonth = thisMonth.AddMonths(-1);
+
+        // Statistics
+        var totalCustomers = await _context.Users.CountAsync();
+        var totalProducts = await _context.Products.CountAsync();
+        var totalOrders = await _context.Orders.CountAsync();
+        var totalRevenue = await _context.Orders
+            .Where(o => o.Status == "completed")
+            .SumAsync(o => (decimal?)o.Total) ?? 0;
+
+        // Month statistics
+        var newCustomersThisMonth = await _context.Users
+            .CountAsync(u => u.CreatedAt >= thisMonth);
+        var newCustomersLastMonth = await _context.Users
+            .CountAsync(u => u.CreatedAt >= lastMonth && u.CreatedAt < thisMonth);
+        var customerGrowth = newCustomersLastMonth > 0
+            ? Math.Round((double)(newCustomersThisMonth - newCustomersLastMonth) / newCustomersLastMonth * 100, 1)
+            : (newCustomersThisMonth > 0 ? 100 : 0);
+
+        var ordersThisMonth = await _context.Orders
+            .CountAsync(o => o.CreatedAt >= thisMonth);
+        var ordersLastMonth = await _context.Orders
+            .CountAsync(o => o.CreatedAt >= lastMonth && o.CreatedAt < thisMonth);
+        var orderGrowth = ordersLastMonth > 0
+            ? Math.Round((double)(ordersThisMonth - ordersLastMonth) / ordersLastMonth * 100, 1)
+            : (ordersThisMonth > 0 ? 100 : 0);
+
+        var revenueThisMonth = await _context.Orders
+            .Where(o => o.Status == "completed" && o.CreatedAt >= thisMonth)
+            .SumAsync(o => (decimal?)o.Total) ?? 0;
+        var revenueLastMonth = await _context.Orders
+            .Where(o => o.Status == "completed" && o.CreatedAt >= lastMonth && o.CreatedAt < thisMonth)
+            .SumAsync(o => (decimal?)o.Total) ?? 0;
+        var revenueGrowth = revenueLastMonth > 0
+            ? Math.Round((double)(revenueThisMonth - revenueLastMonth) / (double)revenueLastMonth * 100, 1)
+            : (revenueThisMonth > 0 ? 100 : 0);
+
+        var productsThisMonth = await _context.Products
+            .CountAsync(p => p.CreatedAt >= thisMonth);
+        var productsLastMonth = await _context.Products
+            .CountAsync(p => p.CreatedAt >= lastMonth && p.CreatedAt < thisMonth);
+        var productGrowth = productsLastMonth > 0
+            ? Math.Round((double)(productsThisMonth - productsLastMonth) / productsLastMonth * 100, 1)
+            : (productsThisMonth > 0 ? 100 : 0);
+
+        // Recent orders (last 10)
+        var recentOrders = await _context.Orders
+            .Include(o => o.User)
+            .OrderByDescending(o => o.CreatedAt)
+            .Take(10)
+            .Select(o => new
+            {
+                o.Id,
+                o.OrderCode,
+                CustomerName = o.CustomerName,
+                o.CreatedAt,
+                o.Total,
+                o.Status
+            })
+            .ToListAsync();
+
+        ViewBag.TotalCustomers = totalCustomers;
+        ViewBag.TotalProducts = totalProducts;
+        ViewBag.TotalOrders = totalOrders;
+        ViewBag.TotalRevenue = totalRevenue;
+        ViewBag.CustomerGrowth = customerGrowth;
+        ViewBag.OrderGrowth = orderGrowth;
+        ViewBag.RevenueGrowth = revenueGrowth;
+        ViewBag.ProductGrowth = productGrowth;
+        ViewBag.NewCustomersThisMonth = newCustomersThisMonth;
+        ViewBag.OrdersThisMonth = ordersThisMonth;
+        ViewBag.RevenueThisMonth = revenueThisMonth;
+        ViewBag.ProductsThisMonth = productsThisMonth;
+        ViewBag.RecentOrders = recentOrders.Select(o => new Dictionary<string, object>
+        {
+            { "Id", o.Id },
+            { "OrderCode", o.OrderCode },
+            { "CustomerName", o.CustomerName },
+            { "CreatedAt", o.CreatedAt },
+            { "Total", o.Total },
+            { "Status", o.Status }
+        }).ToList();
+
         return View();
     }
 
