@@ -79,22 +79,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Wishlist toggle
-    window.toggleWishlist = function(productId, btn) {
-        const icon = btn.querySelector("i");
-        btn.classList.toggle("active");
-
-        if (btn.classList.contains("active")) {
-            icon.classList.remove("fa-regular");
-            icon.classList.add("fa-solid");
-            showToast("Đã thêm sản phẩm vào danh sách yêu thích");
-        } else {
-            icon.classList.remove("fa-solid");
-            icon.classList.add("fa-regular");
-            showToast("Đã bỏ yêu thích sản phẩm");
-        }
-    };
-
     // Add to cart
     window.addToCart = function(productId) {
         // Kiểm tra xem sản phẩm có variants không

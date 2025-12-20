@@ -137,7 +137,9 @@
                     </div>
                     <button class="add-cart-btn" onclick="addToCart(@Model.Id)"><i class="fa-solid fa-cart-plus"></i> Thêm Giỏ Hàng</button>
                     <button class="buy-now-btn" onclick="buyNow(@Model.Id)">Mua Ngay</button>
-                    <button class="wishlist-btn" onclick="addToWishlist(@Model.Id)"><i class="fa-regular fa-heart"></i></button>
+                    <button class="wishlist-btn wishlist-btn-detail" id="wishlistBtnDetail" data-product-id="@Model.Id" onclick="toggleWishlistDetail(@Model.Id, this)">
+                        <i class="fa-regular fa-heart"></i>
+                    </button>
                 </div>
 
                 <div class="meta-info">
@@ -423,10 +425,79 @@ function buyNow(productId) {
     });
 }
 
-function addToWishlist(productId) {
-    // TODO: Implement wishlist
-    console.log('Add to wishlist:', productId);
-    alert('Chức năng yêu thích đang được phát triển!');
+// Toggle wishlist for detail page
+async function toggleWishlistDetail(productId, button) {
+    try {
+        const response = await fetch('/Wishlist/Toggle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `productId=${productId}`
+        });
+        
+        const result = await response.json();
+        
+        if (result.requireLogin) {
+            if (confirm('Vui lòng đăng nhập để sử dụng chức năng yêu thích. Chuyển đến trang đăng nhập?')) {
+                window.location.href = '/Account/Login';
+            }
+            return;
+        }
+        
+        if (result.success) {
+            const icon = button.querySelector('i');
+            
+            if (result.added) {
+                button.classList.add('active');
+                if (icon) {
+                    icon.classList.remove('fa-regular');
+                    icon.classList.add('fa-solid');
+                }
+            } else {
+                button.classList.remove('active');
+                if (icon) {
+                    icon.classList.remove('fa-solid');
+                    icon.classList.add('fa-regular');
+                }
+            }
+            
+            // Update header badge
+            if (typeof updateWishlistBadge === 'function') {
+                updateWishlistBadge(result.count);
+            }
+            
+            // Show toast
+            if (typeof showWishlistToastGlobal === 'function') {
+                showWishlistToastGlobal(result.added ? 'added' : 'removed', result.message);
+            }
+        } else {
+            alert(result.message);
+        }
+    } catch (error) {
+        console.error('Error toggling wishlist:', error);
+    }
 }
+
+// Check if product is in wishlist on page load
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const productId = @Model.Id;
+        const response = await fetch(`/Wishlist/Check?productId=${productId}`);
+        const result = await response.json();
+        
+        if (result.isInWishlist) {
+            const btn = document.getElementById('wishlistBtnDetail');
+            if (btn) {
+                btn.classList.add('active');
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('fa-regular');
+                    icon.classList.add('fa-solid');
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error checking wishlist:', error);
+    }
+});
 </script>
 @Html.AntiForgeryToken()

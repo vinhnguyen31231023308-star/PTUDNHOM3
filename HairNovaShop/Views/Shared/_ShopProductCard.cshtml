@@ -1,7 +1,7 @@
 @model HairNovaShop.Models.Product
 
 <div class="product-card" data-id="@Model.Id">
-    <button class="product-wishlist-btn" type="button" aria-label="Yêu thích" onclick="event.preventDefault(); toggleWishlist(@Model.Id, this);">
+    <button class="product-wishlist-btn wishlist-btn" type="button" aria-label="Yêu thích" data-product-id="@Model.Id" onclick="toggleWishlist(@Model.Id, this); return false;">
         <i class="fa-regular fa-heart"></i>
     </button>
 

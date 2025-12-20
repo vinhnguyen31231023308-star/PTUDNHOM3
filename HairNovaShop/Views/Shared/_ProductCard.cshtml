@@ -23,10 +23,8 @@
             <img src="/images/placeholder.png" alt="@Model.Name" class="prod-img">
         }
         <div class="action-icons">
-            <button class="action-btn" type="button" onclick="event.preventDefault(); addToWishlist(@Model.Id);">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
+            <button class="action-btn wishlist-btn" type="button" data-product-id="@Model.Id" onclick="event.preventDefault(); toggleWishlist(@Model.Id, this);">
+                <i class="fa-regular fa-heart"></i>
             </button>
             <button class="action-btn" type="button" onclick="event.preventDefault(); addToCart(@Model.Id);">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -53,15 +51,3 @@
         </div>
     </div>
 </a>
-
-<script>
-function addToWishlist(productId) {
-    // TODO: Implement wishlist
-    console.log('Add to wishlist:', productId);
-}
-
-function addToCart(productId) {
-    // TODO: Implement cart
-    console.log('Add to cart:', productId);
-}
-</script>

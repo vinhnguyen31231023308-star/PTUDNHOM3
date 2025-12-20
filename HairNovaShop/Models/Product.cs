@@ -13,8 +13,10 @@ public class Product
     // Foreign key to Category
     public int? CategoryId { get; set; }
 
-    // Navigation property
+    // Navigation properties
     public Category? Category { get; set; }
+    
+    public virtual ICollection<ProductVariant>? Variants { get; set; }
 
     [StringLength(2000)]
     public string? Description { get; set; }
