@@ -1,7 +1,6 @@
 @model HairNovaShop.Models.Product
 @{
     ViewData["Title"] = Model.Name + " - HairNovaShop";
-    var relatedProducts = ViewBag.RelatedProducts as List<HairNovaShop.Models.Product> ?? new List<HairNovaShop.Models.Product>();
     var imageList = new List<string>();
     if (!string.IsNullOrEmpty(Model.Images))
     {
@@ -193,6 +192,24 @@
                 {
                     <tr><th>Xuất xứ</th><td>@Model.Origin</td></tr>
                 }
+                @{
+                    var variantsJsonForInfo = Model.StockByCapacity ?? "[]";
+                    var variantsForInfo = new List<Dictionary<string, object>>();
+                    try
+                    {
+                        variantsForInfo = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(variantsJsonForInfo) ?? new List<Dictionary<string, object>>();
+                    }
+                    catch { }
+                    
+                    if (variantsForInfo.Any())
+                    {
+                        var capacities = variantsForInfo.Select(v => v?.GetValueOrDefault("Capacity")?.ToString() ?? "").Where(c => !string.IsNullOrEmpty(c)).ToList();
+                        if (capacities.Any())
+                        {
+                            <tr><th>Dung tích</th><td>@string.Join(", ", capacities)</td></tr>
+                        }
+                    }
+                }
                 @if (!string.IsNullOrEmpty(Model.ExpiryDate))
                 {
                     <tr><th>Hạn sử dụng</th><td>@Model.ExpiryDate</td></tr>
@@ -220,22 +237,6 @@
     </div>
 </section>
 
-@if (relatedProducts.Any())
-{
-    <section class="products-section">
-        <div class="container">
-            <div class="products-header">
-                <h2 class="section-title">Sản Phẩm Liên Quan</h2>
-            </div>
-            <div class="products-grid">
-                @foreach (var product in relatedProducts)
-                {
-                    @await Html.PartialAsync("_ProductCard", product)
-                }
-            </div>
-        </div>
-    </section>
-}
 
 <script>
 let currentImageIndex = 0;
