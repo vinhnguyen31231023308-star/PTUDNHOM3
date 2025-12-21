@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
     <title>@ViewData["Title"] - HairNovaShop</title>
     
     <!-- Fonts -->
@@ -155,6 +155,45 @@
     <script src="~/js/head.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/wishlist.js" asp-append-version="true"></script>
+    
+    <!-- Viewport & Scaling Detection & Normalization -->
+    <script>
+        (function() {
+            // #region agent log - Detect viewport and scaling on load
+            const viewportData = {
+                innerWidth: window.innerWidth,
+                outerWidth: window.outerWidth,
+                innerHeight: window.innerHeight,
+                outerHeight: window.outerHeight,
+                devicePixelRatio: window.devicePixelRatio || 1,
+                screenWidth: screen.width,
+                screenHeight: screen.height,
+                clientWidth: document.documentElement.clientWidth,
+                clientHeight: document.documentElement.clientHeight,
+                computedZoom: window.outerWidth / window.innerWidth,
+                userAgent: navigator.userAgent
+            };
+            fetch('http://127.0.0.1:7242/ingest/9b7c6f72-11df-457e-a521-b0316a2b2596',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'_Layout.cshtml:viewport-debug',message:'Viewport dimensions and scaling detected',data:viewportData,timestamp:Date.now(),sessionId:'debug-session',runId:'viewport-check',hypothesisId:'A'})}).catch(()=>{});
+            // #endregion
+            
+            // Detect if browser zoom is not 100% (hypothesis: browser zoom level differs)
+            // #region agent log - Check browser zoom level
+            const zoomLevel = viewportData.computedZoom;
+            const isZoomed = Math.abs(zoomLevel - 1.0) > 0.05; // Allow 5% tolerance
+            fetch('http://127.0.0.1:7242/ingest/9b7c6f72-11df-457e-a521-b0316a2b2596',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'_Layout.cshtml:zoom-detection',message:'Browser zoom level check',data:{zoomLevel:zoomLevel,isZoomed:isZoomed,zoomPercent:(zoomLevel * 100).toFixed(1)},timestamp:Date.now(),sessionId:'debug-session',runId:'viewport-check',hypothesisId:'B'})}).catch(()=>{});
+            // #endregion
+            
+            // Normalize viewport: Force scale to 1.0 if zoom is detected
+            // Note: We cannot programmatically change browser zoom, but we can detect and log it
+            if (isZoomed) {
+                console.warn('Browser zoom level detected:', (zoomLevel * 100).toFixed(1) + '%');
+                // #region agent log - Zoom normalization attempt
+                fetch('http://127.0.0.1:7242/ingest/9b7c6f72-11df-457e-a521-b0316a2b2596',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'_Layout.cshtml:zoom-normalization',message:'Zoom level differs from 100%, user may need to reset browser zoom',data:{detectedZoom:zoomLevel},timestamp:Date.now(),sessionId:'debug-session',runId:'viewport-check',hypothesisId:'B'})}).catch(()=>{});
+                // #endregion
+            }
+        })();
+    </script>
+    
     @await RenderSectionAsync("Scripts", required: false)
 
     @if (TempData["OrderSuccess"] != null)

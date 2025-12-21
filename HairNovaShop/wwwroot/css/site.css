@@ -15,8 +15,16 @@ html {
 html {
   position: relative;
   min-height: 100%;
+  /* Prevent unwanted scaling */
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   margin-bottom: 60px;
+  /* Prevent unwanted scaling */
+  -webkit-transform: scale(1);
+  transform: scale(1);
 }
