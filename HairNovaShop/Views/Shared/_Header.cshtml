@@ -27,10 +27,10 @@
                 </ul>
             </li>
 
-            <li><a href="#" class="@(currentController == "News" ? "active" : "")">Tin tức</a></li>
-            <li><a href="#" class="@(currentController == "About" ? "active" : "")">Giới thiệu</a></li>
-            <li><a href="#" class="@(currentController == "Contact" ? "active" : "")">Liên hệ</a></li>
-            <li><a href="#" class="@(currentController == "Policy" ? "active" : "")">Chính sách</a></li>
+            <li><a asp-controller="News" asp-action="Index" class="@(currentController == "News" ? "active" : "")">Tin tức</a></li>
+            <li><a asp-controller="About" asp-action="Index" class="@(currentController == "About" ? "active" : "")">Giới thiệu</a></li>
+            <li><a asp-controller="Contact" asp-action="Index" class="@(currentController == "Contact" ? "active" : "")">Liên hệ</a></li>
+            <li><a asp-controller="Policy" asp-action="Index" class="@(currentController == "Policy" ? "active" : "")">Chính sách</a></li>
         </ul>
     </nav>
 
