@@ -618,6 +618,7 @@ public class AccountController : Controller
 
         var orderItems = order.OrderItems.Select(oi => new
         {
+            ProductId = oi.ProductId,
             ProductName = oi.ProductName,
             ProductImage = oi.Product?.MainImage ?? "/images/placeholder.png",
             Quantity = oi.Quantity,

@@ -204,6 +204,12 @@ function createOrderCardHTML(order) {
         </div>
         <div class="order-actions-wrapper">
             <span class="status-badge ${statusClass}">${order.statusText}</span>
+            ${order.status === 'success' ? `
+                <button class="btn btn-primary" onclick="openReviewProductsModal('${order.orderId || order.id}')" 
+                    style="padding: 8px 20px; font-size: 0.85rem; border-radius: 50px; font-weight: 600; white-space: nowrap; margin-right: 10px;">
+                    <i class="fas fa-star" style="margin-right: 5px;"></i>Đánh giá sản phẩm
+                </button>
+            ` : ''}
             <button class="btn btn-outline" onclick="openOrderDetail('${order.orderId || order.id}')" 
                 style="padding: 8px 20px; font-size: 0.85rem; border-radius: 50px; font-weight: 600; white-space: nowrap;">
                 Chi tiết
@@ -349,7 +355,93 @@ async function handleCancelOrder() {
 }
 
 function handleReorder() {
-    alert('Chức năng mua lại sẽ được triển khai sau.');
+    showPasswordToast('info', 'Thông báo', 'Chức năng mua lại sẽ được triển khai sau. Vui lòng thêm sản phẩm vào giỏ hàng từ trang sản phẩm.');
+}
+
+// Open modal to review products in completed order
+async function openReviewProductsModal(orderId) {
+    try {
+        const response = await fetch(`/Account/GetOrderDetails?id=${orderId}`);
+        const result = await response.json();
+        
+        if (!result.success) {
+            showPasswordToast('error', 'Lỗi!', result.message || 'Không thể tải chi tiết đơn hàng');
+            return;
+        }
+
+        const order = result.order;
+        
+        // Check if order is completed
+        if (order.status !== 'completed') {
+            showPasswordToast('error', 'Lỗi!', 'Chỉ có thể đánh giá sản phẩm khi đơn hàng đã giao thành công');
+            return;
+        }
+
+        // Build modal content with products list
+        let productsHTML = '';
+        if (order.items && order.items.length > 0) {
+            productsHTML = order.items.map(item => `
+                <div style="display: flex; gap: 15px; padding: 15px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 15px; align-items: center;">
+                    <img src="${item.productImage}" style="width: 80px; height: 80px; object-fit: contain; border: 1px solid #eee; border-radius: 8px;" onerror="this.src='/images/placeholder.png'">
+                    <div style="flex: 1;">
+                        <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 5px;">${item.productName}</h4>
+                        <p style="font-size: 0.85rem; color: #666; margin-bottom: 0;">${item.capacity ? item.capacity + ' • ' : ''}Số lượng: ${item.quantity}</p>
+                    </div>
+                    <a href="/Product/Detail/${item.productId}" class="btn btn-primary" style="padding: 8px 20px; font-size: 0.85rem; border-radius: 50px; white-space: nowrap; text-decoration: none;">
+                        <i class="fas fa-star" style="margin-right: 5px;"></i>Đánh giá
+                    </a>
+                </div>
+            `).join('');
+        } else {
+            productsHTML = '<p style="color: #999; text-align: center; padding: 20px;">Không có sản phẩm nào trong đơn hàng</p>';
+        }
+
+        // Create or update review products modal
+        let modal = document.getElementById('review-products-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'review-products-modal';
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 700px;">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Đánh giá sản phẩm</h4>
+                        <button type="button" class="close-btn" onclick="closeReviewProductsModal()">&times;</button>
+                    </div>
+                    <div class="modal-body" id="review-products-modal-body" style="max-height: 500px; overflow-y: auto;">
+                    </div>
+                    <div class="modal-footer" style="text-align: right; padding-top: 20px;">
+                        <button type="button" class="btn btn-outline" onclick="closeReviewProductsModal()">Đóng</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        const modalBody = document.getElementById('review-products-modal-body');
+        if (modalBody) {
+            modalBody.innerHTML = `
+                <div style="margin-bottom: 20px; padding: 15px; background: #f9fafb; border-radius: 10px;">
+                    <p style="margin-bottom: 5px;"><strong>Mã đơn hàng:</strong> ${order.orderCode}</p>
+                    <p style="margin-bottom: 0;"><strong>Ngày đặt:</strong> ${order.createdAt}</p>
+                </div>
+                <h5 style="font-weight: 600; margin-bottom: 15px;">Chọn sản phẩm để đánh giá:</h5>
+                ${productsHTML}
+            `;
+        }
+
+        modal.classList.add('show');
+    } catch (error) {
+        console.error('Error opening review products modal:', error);
+        showPasswordToast('error', 'Lỗi!', 'Có lỗi xảy ra khi mở danh sách sản phẩm');
+    }
+}
+
+function closeReviewProductsModal() {
+    const modal = document.getElementById('review-products-modal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
 }
 
 // ==========================================
