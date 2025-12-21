@@ -181,7 +181,7 @@ body {
     LAYOUT & COMPONENTS
     ========================================= */
 .profile-layout {
-    padding-top: 20px;
+    padding-top: 100px;
     display: grid;
     grid-template-columns: 280px 1fr;
     gap: 40px;
@@ -764,6 +764,88 @@ body {
     gap: 10px;
 }
 
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.show {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-content {
+    background: white;
+    padding: 25px 35px;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: translateY(-50px);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.show .modal-content {
+    transform: translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.modal-header h3, .modal-header h4 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.modal-close, .close-btn {
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: var(--text-gray);
+    background: none;
+    border: none;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.modal-close:hover, .close-btn:hover {
+    color: #ef4444;
+}
+
+.modal-body {
+    padding: 20px 0;
+}
+
+.modal-footer {
+    padding-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
 @media (max-width: 768px) {
     .profile-layout {
         grid-template-columns: 1fr;
@@ -804,5 +886,10 @@ body {
 
     .address-grid {
         grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 20px;
     }
 }

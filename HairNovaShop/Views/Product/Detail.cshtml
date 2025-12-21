@@ -229,11 +229,67 @@
                             <i class="fa-solid fa-star @(i < (int)Model.Rating ? "" : "text-muted")"></i>
                         }
                     </div>
-                    <p style="color:#888;">(@Model.ReviewCount Reviews)</p>
+                    <p style="color:#888;">(@Model.ReviewCount Đánh giá)</p>
                 </div>
             </div>
-            <div class="text-center p-4">
-                <p>Chức năng đánh giá đang được phát triển.</p>
+
+            @if (ViewBag.CanReview == true && ViewBag.HasReviewed != true)
+            {
+                <div class="review-form-container" style="margin-top: 30px; padding: 20px; background: #f9fafb; border-radius: 12px;">
+                    <h4 style="margin-bottom: 15px; font-weight: 600;">Viết đánh giá của bạn</h4>
+                    <form id="reviewForm" onsubmit="event.preventDefault(); submitReview();">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Chọn đơn hàng:</label>
+                            <select id="reviewOrderId" class="form-control" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;" required>
+                                <option value="">-- Chọn đơn hàng --</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Đánh giá:</label>
+                            <div class="star-rating" id="starRating">
+                                @for (int i = 5; i >= 1; i--)
+                                {
+                                    <i class="fa-regular fa-star star-icon" data-rating="@i" style="font-size: 28px; color: #ffc107; cursor: pointer; margin-right: 5px;" onmouseover="hoverStar(@i)" onmouseout="resetStars()" onclick="selectStar(@i)"></i>
+                                }
+                            </div>
+                            <input type="hidden" id="selectedRating" value="0" required>
+                            <small id="ratingError" style="color: #ef4444; display: none;">Vui lòng chọn số sao đánh giá</small>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500;">Nhận xét:</label>
+                            <textarea id="reviewComment" class="form-control" rows="4" placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; resize: vertical;" maxlength="2000"></textarea>
+                            <small style="color: #888;">Tối đa 2000 ký tự</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <button type="submit" class="btn btn-primary" style="padding: 10px 30px; border-radius: 8px; font-weight: 600;">Gửi đánh giá</button>
+                        </div>
+                    </form>
+                </div>
+            }
+            else if (ViewBag.HasReviewed == true)
+            {
+                <div class="alert alert-info" style="margin-top: 20px; padding: 15px; background: #e0f2fe; color: #0369a1; border-radius: 8px;">
+                    <i class="fas fa-info-circle"></i> Bạn đã đánh giá sản phẩm này rồi.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning" style="margin-top: 20px; padding: 15px; background: #fef3c7; color: #92400e; border-radius: 8px;">
+                    <i class="fas fa-exclamation-triangle"></i> Chỉ khách hàng đã mua và nhận được sản phẩm mới có thể đánh giá. 
+                    @if (ViewBag.CanReview != true)
+                    {
+                        <span>Vui lòng <a href="/Account/Login" style="color: #92400e; text-decoration: underline;">đăng nhập</a> và hoàn thành đơn hàng để đánh giá.</span>
+                    }
+                </div>
+            }
+
+            <div id="reviewsList" style="margin-top: 30px;">
+                <h4 style="margin-bottom: 20px; font-weight: 600;">Tất cả đánh giá</h4>
+                <div id="reviewsContainer">
+                    <div class="text-center" style="padding: 40px;">
+                        <p style="color: #888;">Đang tải đánh giá...</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -495,9 +551,193 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             }
         }
+
+        // Load reviews and check if user can review
+        loadReviews();
+        checkCanReview();
     } catch (error) {
         console.error('Error checking wishlist:', error);
     }
 });
+
+// Load reviews
+async function loadReviews() {
+    try {
+        const productId = @Model.Id;
+        const response = await fetch(`/Product/GetReviews?productId=${productId}`);
+        const result = await response.json();
+        
+        const container = document.getElementById('reviewsContainer');
+        if (!container) return;
+        
+        if (result.success && result.reviews && result.reviews.length > 0) {
+            container.innerHTML = result.reviews.map(review => `
+                <div class="review-item" style="padding: 20px; border-bottom: 1px solid #eee; margin-bottom: 15px;">
+                    <div style="display: flex; gap: 15px; margin-bottom: 10px;">
+                        <img src="${review.userAvatar}" alt="${review.userName}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; margin-bottom: 5px;">${review.userName}</div>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                <div class="review-stars">
+                                    ${Array.from({length: 5}, (_, i) => 
+                                        `<i class="fa-solid fa-star" style="color: ${i < review.rating ? '#ffc107' : '#ddd'}; font-size: 14px;"></i>`
+                                    ).join('')}
+                                </div>
+                                <span style="color: #888; font-size: 0.9rem;">${review.createdAt}</span>
+                            </div>
+                        </div>
+                    </div>
+                    ${review.comment ? `<div style="color: #333; line-height: 1.6; margin-top: 10px;">${escapeHtml(review.comment)}</div>` : ''}
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<div class="text-center" style="padding: 40px;"><p style="color: #888;">Chưa có đánh giá nào.</p></div>';
+        }
+    } catch (error) {
+        console.error('Error loading reviews:', error);
+        const container = document.getElementById('reviewsContainer');
+        if (container) {
+            container.innerHTML = '<div class="text-center" style="padding: 40px;"><p style="color: #ef4444;">Có lỗi xảy ra khi tải đánh giá.</p></div>';
+        }
+    }
+}
+
+// Check if user can review
+async function checkCanReview() {
+    try {
+        const productId = @Model.Id;
+        const response = await fetch(`/Product/CanReview?productId=${productId}`);
+        const result = await response.json();
+        
+        if (result.success && result.canReview && result.orders && result.orders.length > 0) {
+            const orderSelect = document.getElementById('reviewOrderId');
+            if (orderSelect) {
+                orderSelect.innerHTML = '<option value="">-- Chọn đơn hàng --</option>' +
+                    result.orders.map(order => 
+                        `<option value="${order.orderId}">Đơn hàng ${order.orderCode} - ${order.createdAt}</option>`
+                    ).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Error checking can review:', error);
+    }
+}
+
+// Star rating functions
+let selectedRating = 0;
+
+function hoverStar(rating) {
+    const stars = document.querySelectorAll('.star-icon');
+    stars.forEach((star, index) => {
+        const starRating = parseInt(star.getAttribute('data-rating'));
+        if (starRating <= rating) {
+            star.classList.remove('fa-regular');
+            star.classList.add('fa-solid');
+        } else {
+            star.classList.remove('fa-solid');
+            star.classList.add('fa-regular');
+        }
+    });
+}
+
+function resetStars() {
+    const stars = document.querySelectorAll('.star-icon');
+    stars.forEach((star, index) => {
+        const starRating = parseInt(star.getAttribute('data-rating'));
+        if (selectedRating === 0 || starRating > selectedRating) {
+            star.classList.remove('fa-solid');
+            star.classList.add('fa-regular');
+        } else {
+            star.classList.remove('fa-regular');
+            star.classList.add('fa-solid');
+        }
+    });
+}
+
+function selectStar(rating) {
+    selectedRating = rating;
+    document.getElementById('selectedRating').value = rating;
+    const errorEl = document.getElementById('ratingError');
+    if (errorEl) errorEl.style.display = 'none';
+    
+    const stars = document.querySelectorAll('.star-icon');
+    stars.forEach((star) => {
+        const starRating = parseInt(star.getAttribute('data-rating'));
+        if (starRating <= rating) {
+            star.classList.remove('fa-regular');
+            star.classList.add('fa-solid');
+        } else {
+            star.classList.remove('fa-solid');
+            star.classList.add('fa-regular');
+        }
+    });
+}
+
+// Submit review
+async function submitReview() {
+    const productId = @Model.Id;
+    const orderId = document.getElementById('reviewOrderId')?.value;
+    const rating = parseInt(document.getElementById('selectedRating')?.value || 0);
+    const comment = document.getElementById('reviewComment')?.value?.trim() || '';
+
+    // Validation
+    if (!orderId) {
+        alert('Vui lòng chọn đơn hàng');
+        return;
+    }
+
+    if (rating < 1 || rating > 5) {
+        document.getElementById('ratingError').style.display = 'block';
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('productId', productId);
+        formData.append('orderId', orderId);
+        formData.append('rating', rating);
+        if (comment) {
+            formData.append('comment', comment);
+        }
+
+        const response = await fetch('/Product/AddReview', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(result.message || 'Đánh giá của bạn đã được ghi nhận. Cảm ơn bạn!');
+            // Reset form
+            document.getElementById('reviewForm').reset();
+            selectedRating = 0;
+            resetStars();
+            // Reload reviews
+            loadReviews();
+            // Reload page to update rating and review count
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        } else {
+            alert(result.message || 'Có lỗi xảy ra khi gửi đánh giá');
+        }
+    } catch (error) {
+        console.error('Error submitting review:', error);
+        alert('Có lỗi xảy ra khi gửi đánh giá');
+    }
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
 </script>
 @Html.AntiForgeryToken()

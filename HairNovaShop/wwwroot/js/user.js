@@ -54,10 +54,34 @@ function handleLogout() {
 }
 
 function closeAddressModal() {
-    document.getElementById('address-modal').classList.remove('show');
+    const modal = document.getElementById('address-modal');
+    if (modal) {
+        modal.classList.remove('show');
+        const form = document.getElementById('address-form');
+        if (form) {
+            form.reset();
+            document.getElementById('set-default-address').checked = false;
+        }
+    }
 }
 
 function openEditAddressModal(addressId) {
+    // Find address data from the clicked card
+    const addressCard = event.target.closest('.address-card');
+    if (!addressCard) {
+        openAddAddressModal();
+        return;
+    }
+
+    const addressData = addressCard.querySelector('.address-data');
+    if (addressData) {
+        document.getElementById('recipient-name').value = addressData.dataset.name || '';
+        document.getElementById('recipient-phone').value = addressData.dataset.phone || '';
+        document.getElementById('street-address').value = addressData.dataset.address || '';
+        document.getElementById('province').value = addressData.dataset.province || '';
+        document.getElementById('district').value = addressData.dataset.ward || '';
+    }
+
     document.getElementById('modal-title').textContent = "Cập nhật địa chỉ";
     document.getElementById('address-modal').classList.add('show');
 }
@@ -65,8 +89,35 @@ function openEditAddressModal(addressId) {
 function openAddAddressModal() {
     document.getElementById('modal-title').textContent = "Thêm địa chỉ mới";
     const form = document.getElementById('address-form');
-    if (form) form.reset();
+    if (form) {
+        form.reset();
+        document.getElementById('set-default-address').checked = false;
+    }
     document.getElementById('address-modal').classList.add('show');
+}
+
+function saveAddress() {
+    const recipientName = document.getElementById('recipient-name')?.value.trim();
+    const recipientPhone = document.getElementById('recipient-phone')?.value.trim();
+    const streetAddress = document.getElementById('street-address')?.value.trim();
+    const province = document.getElementById('province')?.value;
+    const district = document.getElementById('district')?.value.trim();
+
+    if (!recipientName || !recipientPhone || !streetAddress || !province) {
+        showPasswordToast('error', 'Lỗi!', 'Vui lòng điền đầy đủ thông tin bắt buộc');
+        return;
+    }
+
+    // For now, just show message since address is saved when placing order
+    showPasswordToast('info', 'Thông báo', 'Địa chỉ sẽ được lưu khi bạn đặt hàng. Vui lòng sử dụng địa chỉ này khi thanh toán.');
+    closeAddressModal();
+}
+
+function handleDeleteAddress(addressId, button) {
+    if (confirm('Bạn có chắc chắn muốn xóa địa chỉ này không?')) {
+        // For now, just show message since addresses come from orders
+        showPasswordToast('info', 'Thông báo', 'Địa chỉ này được lấy từ đơn hàng của bạn. Không thể xóa trực tiếp.');
+    }
 }
 
 // ==========================================
@@ -168,10 +219,11 @@ function createOrderCardHTML(order) {
 function getActionButtonsHTML(status) {
     let buttons = '';
 
-    if (status === 'processing' || status === 'pending' || status === 'confirmed') {
+    // Chỉ cho phép hủy khi status là "pending"
+    if (status === 'pending') {
         buttons += `<button type="button" class="btn btn-danger" onclick="handleCancelOrder()" style="margin-left: 10px;">Hủy đơn</button>`;
     }
-    else if (status === 'success' || status === 'completed' || status === 'cancelled') {
+    else if (status === 'completed') {
         buttons += `<button type="button" class="btn btn-primary" onclick="handleReorder()" style="margin-left: 10px;">Mua lại</button>`;
     }
 
@@ -189,7 +241,7 @@ async function openOrderDetail(orderId) {
         const result = await response.json();
         
         if (!result.success) {
-            alert(result.message || 'Không thể tải chi tiết đơn hàng');
+            showPasswordToast('error', 'Lỗi!', result.message || 'Không thể tải chi tiết đơn hàng');
             return;
         }
 
@@ -197,6 +249,10 @@ async function openOrderDetail(orderId) {
         const modalBody = document.getElementById('detail-modal-body');
         const modalFooter = document.getElementById('order-detail-modal').querySelector('.modal-footer');
         if (!modalBody || !modalFooter) return;
+
+        // Store order code and status for cancel function
+        window.currentOrderCode = order.orderCode;
+        window.currentOrderStatus = order.status;
 
         // Tạo nội dung thanh hành động
         modalFooter.innerHTML = getActionButtonsHTML(order.status);
@@ -242,7 +298,7 @@ async function openOrderDetail(orderId) {
         document.getElementById('order-detail-modal').classList.add('show');
     } catch (error) {
         console.error('Error loading order details:', error);
-        alert('Có lỗi xảy ra khi tải chi tiết đơn hàng');
+        showPasswordToast('error', 'Lỗi!', 'Có lỗi xảy ra khi tải chi tiết đơn hàng');
     }
 }
 
@@ -250,9 +306,45 @@ function closeOrderDetailModal() {
     document.getElementById('order-detail-modal').classList.remove('show');
 }
 
-function handleCancelOrder() {
-    if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')) {
-        alert('Chức năng hủy đơn hàng sẽ được triển khai sau.');
+async function handleCancelOrder() {
+    // Kiểm tra trạng thái đơn hàng
+    const orderStatus = window.currentOrderStatus;
+    
+    if (orderStatus !== 'pending') {
+        showPasswordToast('error', 'Lỗi!', 'Chỉ có thể hủy đơn hàng ở trạng thái "Chờ xác nhận"');
+        return;
+    }
+
+    if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')) {
+        return;
+    }
+
+    const orderCode = window.currentOrderCode;
+    if (!orderCode) {
+        showPasswordToast('error', 'Lỗi!', 'Không thể lấy mã đơn hàng');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/Account/CancelOrder?orderCode=${encodeURIComponent(orderCode)}`, {
+            method: 'POST'
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            showPasswordToast('success', 'Thành công!', result.message || 'Đã hủy đơn hàng thành công');
+            closeOrderDetailModal();
+            // Reload orders
+            await loadOrdersFromServer();
+            renderOrders('all');
+            loadDashboardData();
+        } else {
+            showPasswordToast('error', 'Lỗi!', result.message || 'Không thể hủy đơn hàng');
+        }
+    } catch (error) {
+        console.error('Error cancelling order:', error);
+        showPasswordToast('error', 'Lỗi!', 'Có lỗi xảy ra khi hủy đơn hàng');
     }
 }
 
@@ -297,12 +389,20 @@ function filterOrders(status, btn) {
 // TRACKING ORDER
 // ==========================================
 async function searchTracking() {
-    const input = document.querySelector('.tracking-search input');
+    const input = document.getElementById('tracking-order-code');
     const orderCode = input?.value.trim();
     
     if (!orderCode) {
-        alert('Vui lòng nhập mã đơn hàng');
+        showPasswordToast('error', 'Lỗi!', 'Vui lòng nhập mã đơn hàng');
         return;
+    }
+
+    // Show loading state
+    const searchButton = document.querySelector('.tracking-search button');
+    const originalButtonText = searchButton?.innerHTML;
+    if (searchButton) {
+        searchButton.disabled = true;
+        searchButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang tìm kiếm...';
     }
 
     try {
@@ -310,22 +410,51 @@ async function searchTracking() {
         const result = await response.json();
         
         if (!result.success) {
-            alert(result.message || 'Không tìm thấy đơn hàng');
+            showPasswordToast('error', 'Lỗi!', result.message || 'Không tìm thấy đơn hàng');
+            // Hide tracking result
+            const trackingResult = document.getElementById('tracking-result');
+            if (trackingResult) trackingResult.style.display = 'none';
             return;
         }
 
         const order = result.order;
         displayTrackingResult(order);
+        
+        // Show tracking result section
+        const trackingResult = document.getElementById('tracking-result');
+        if (trackingResult) {
+            trackingResult.style.display = 'block';
+            // Scroll to result
+            trackingResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
     } catch (error) {
         console.error('Error searching order:', error);
-        alert('Có lỗi xảy ra khi tìm kiếm đơn hàng');
+        showPasswordToast('error', 'Lỗi!', 'Có lỗi xảy ra khi tìm kiếm đơn hàng');
+    } finally {
+        // Restore button state
+        if (searchButton) {
+            searchButton.disabled = false;
+            searchButton.innerHTML = originalButtonText || '<i class="fas fa-search" style="margin-right: 8px;"></i>Tra cứu';
+        }
     }
 }
 
 function displayTrackingResult(order) {
-    // Update tracking display with order data
-    const trackingContainer = document.querySelector('#tracking .card-box');
-    if (!trackingContainer) return;
+    // Update order code display
+    const codeDisplay = document.getElementById('tracking-order-code-display');
+    if (codeDisplay) codeDisplay.textContent = '#' + order.orderCode;
+
+    // Update order date
+    const orderDateEl = document.getElementById('tracking-order-date');
+    if (orderDateEl && order.createdAtDate) {
+        orderDateEl.textContent = order.createdAtDate;
+    }
+
+    // Update expected delivery date
+    const expectedDateEl = document.getElementById('tracking-expected-date');
+    if (expectedDateEl && order.expectedDeliveryDate) {
+        expectedDateEl.textContent = order.expectedDeliveryDate;
+    }
 
     // Calculate progress percentage
     let progress = 0;
@@ -333,33 +462,172 @@ function displayTrackingResult(order) {
     else if (order.status === 'shipping') progress = 75;
     else if (order.status === 'confirmed') progress = 50;
     else if (order.status === 'pending') progress = 25;
+    else if (order.status === 'cancelled') progress = 0;
 
     const statusName = order.statusName;
     const statusClass = order.status === 'completed' ? 'status-success' : 
                        order.status === 'cancelled' ? 'status-danger' : 'status-pending';
 
-    // Update timeline steps
-    const steps = trackingContainer.querySelectorAll('.step-item');
-    steps.forEach((step, index) => {
-        step.classList.remove('active');
-        if (order.status === 'pending' && index === 0) step.classList.add('active');
-        else if (order.status === 'confirmed' && index <= 1) step.classList.add('active');
-        else if (order.status === 'shipping' && index <= 2) step.classList.add('active');
-        else if (order.status === 'completed' && index <= 3) step.classList.add('active');
-    });
-
-    // Update progress bar
-    const progressBar = trackingContainer.querySelector('.progress-bar-fill');
-    if (progressBar) progressBar.style.width = progress + '%';
-
-    // Update order info
-    const orderInfo = trackingContainer.querySelector('h3');
-    if (orderInfo) orderInfo.textContent = `Mã đơn: #${order.orderCode}`;
-    
-    const statusBadge = trackingContainer.querySelector('.status-badge');
+    // Update status badge
+    const statusBadge = document.getElementById('tracking-status-badge');
     if (statusBadge) {
         statusBadge.textContent = statusName;
         statusBadge.className = `status-badge ${statusClass}`;
+    }
+
+    // Update timeline steps with dates
+    const timelineDates = order.timelineDates || {};
+    const steps = [
+        { id: 'step-1', date: timelineDates.orderDate || '--/--' },
+        { id: 'step-2', date: timelineDates.confirmedDate || '--/--' },
+        { id: 'step-3', date: timelineDates.shippingDate || '--/--' },
+        { id: 'step-4', date: timelineDates.completedDate || '--/--' }
+    ];
+
+    steps.forEach((stepInfo, index) => {
+        const step = document.getElementById(stepInfo.id);
+        if (step) {
+            step.classList.remove('active');
+            
+            // Update date
+            const dateEl = step.querySelector('.step-date');
+            if (dateEl) {
+                dateEl.textContent = stepInfo.date;
+            }
+
+            // Activate steps based on status
+            if (order.status === 'cancelled') {
+                // Don't activate any steps for cancelled orders
+            } else if (order.status === 'pending' && index === 0) {
+                step.classList.add('active');
+            } else if (order.status === 'confirmed' && index <= 1) {
+                step.classList.add('active');
+            } else if (order.status === 'shipping' && index <= 2) {
+                step.classList.add('active');
+            } else if (order.status === 'completed' && index <= 3) {
+                step.classList.add('active');
+            }
+        }
+    });
+
+    // Update progress bar
+    const progressBar = document.getElementById('tracking-progress');
+    if (progressBar) {
+        progressBar.style.width = progress + '%';
+        if (order.status === 'cancelled') {
+            progressBar.style.background = '#ef4444';
+        } else {
+            progressBar.style.background = 'var(--bs-primary)';
+        }
+    }
+
+    // Update logs with detailed information
+    const logsContainer = document.getElementById('tracking-logs');
+    if (logsContainer) {
+        let logsHTML = '<h4 style="margin-bottom: 15px;">Chi tiết hành trình</h4>';
+
+        // Add order creation log
+        if (timelineDates.orderDate) {
+            logsHTML += `
+                <div class="log-item">
+                    <div class="log-icon"><i class="fas fa-shopping-cart"></i></div>
+                    <div class="log-content">
+                        <h4>Đơn hàng đã được đặt</h4>
+                        <p>Đơn hàng #${order.orderCode} đã được tạo thành công</p>
+                    </div>
+                    <div class="log-time">${timelineDates.orderDate}</div>
+                </div>
+            `;
+        }
+
+        // Add confirmation log
+        if (order.status !== 'pending' && timelineDates.confirmedDate) {
+            logsHTML += `
+                <div class="log-item">
+                    <div class="log-icon"><i class="fas fa-check-double"></i></div>
+                    <div class="log-content">
+                        <h4>Đơn hàng đã được xác nhận</h4>
+                        <p>Đơn hàng đã được xác nhận và đang được chuẩn bị</p>
+                    </div>
+                    <div class="log-time">${timelineDates.confirmedDate}</div>
+                </div>
+            `;
+        }
+
+        // Add shipping log
+        if ((order.status === 'shipping' || order.status === 'completed') && timelineDates.shippingDate) {
+            logsHTML += `
+                <div class="log-item">
+                    <div class="log-icon"><i class="fas fa-shipping-fast"></i></div>
+                    <div class="log-content">
+                        <h4>Đơn hàng đang được vận chuyển</h4>
+                        <p>Đơn hàng đã rời kho và đang trên đường đến địa chỉ của bạn</p>
+                    </div>
+                    <div class="log-time">${timelineDates.shippingDate}</div>
+                </div>
+            `;
+        }
+
+        // Add completion log
+        if (order.status === 'completed' && timelineDates.completedDate) {
+            logsHTML += `
+                <div class="log-item">
+                    <div class="log-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="log-content">
+                        <h4>Giao hàng thành công</h4>
+                        <p>Đơn hàng đã được giao thành công. Cảm ơn bạn đã mua sắm!</p>
+                    </div>
+                    <div class="log-time">${timelineDates.completedDate}</div>
+                </div>
+            `;
+        }
+
+        // Add cancelled log
+        if (order.status === 'cancelled') {
+            logsHTML += `
+                <div class="log-item">
+                    <div class="log-icon"><i class="fas fa-times-circle"></i></div>
+                    <div class="log-content">
+                        <h4>Đơn hàng đã bị hủy</h4>
+                        <p>Đơn hàng đã bị hủy theo yêu cầu hoặc do lý do khác</p>
+                    </div>
+                    <div class="log-time">${order.createdAt}</div>
+                </div>
+            `;
+        }
+
+        // Add order details section
+        if (order.items && order.items.length > 0) {
+            logsHTML += `
+                <hr style="border: 0; border-top: 1px dashed #eee; margin: 20px 0;">
+                <h4 style="margin-bottom: 15px;">Thông tin đơn hàng</h4>
+                <div style="background: #f9fafb; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <p style="margin-bottom: 8px;"><strong>Khách hàng:</strong> ${order.customerName}</p>
+                    <p style="margin-bottom: 8px;"><strong>Điện thoại:</strong> ${order.customerPhone}</p>
+                    <p style="margin-bottom: 8px;"><strong>Địa chỉ:</strong> ${order.shippingAddress}${order.shippingProvince ? ', ' + order.shippingProvince : ''}${order.shippingWard ? ', ' + order.shippingWard : ''}</p>
+                    <p style="margin-bottom: 8px;"><strong>Phương thức thanh toán:</strong> ${order.paymentMethod}</p>
+                    <p style="margin-bottom: 0;"><strong>Tổng tiền:</strong> <span style="color: var(--bs-primary); font-weight: 700; font-size: 1.1rem;">${formatPrice(order.total)}</span></p>
+                </div>
+                <h4 style="margin-bottom: 15px;">Sản phẩm trong đơn hàng</h4>
+            `;
+
+            order.items.forEach(item => {
+                logsHTML += `
+                    <div class="log-item" style="margin-bottom: 15px;">
+                        <img src="${item.productImage}" style="width: 60px; height: 60px; object-fit: contain; border: 1px solid #eee; border-radius: 8px; margin-right: 15px;" onerror="this.src='/images/placeholder.png'">
+                        <div class="log-content" style="flex: 1;">
+                            <h4 style="margin-bottom: 5px;">${item.productName}</h4>
+                            <p style="font-size: 0.85rem; color: #666;">${item.capacity ? item.capacity + ' • ' : ''}Số lượng: ${item.quantity}</p>
+                        </div>
+                        <div style="text-align: right; font-weight: 700; color: var(--bs-primary);">
+                            ${formatPrice(item.subtotal)}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        logsContainer.innerHTML = logsHTML;
     }
 }
 
@@ -390,10 +658,12 @@ async function updateProfile() {
 
         const result = await response.json();
         if (result.success) {
-            alert(result.message || 'Cập nhật thông tin thành công!');
-            location.reload();
+            showPasswordToast('success', 'Thành công!', result.message || 'Cập nhật thông tin thành công!');
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
         } else {
-            alert(result.message || 'Có lỗi xảy ra');
+            showPasswordToast('error', 'Lỗi!', result.message || 'Có lỗi xảy ra');
         }
     } catch (error) {
         console.error('Error updating profile:', error);

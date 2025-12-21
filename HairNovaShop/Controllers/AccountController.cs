@@ -749,6 +749,38 @@ public class AccountController : Controller
             _ => order.Status
         };
 
+        var paymentMethodName = order.PaymentMethod switch
+        {
+            "cod" => "COD (Thanh toán khi nhận)",
+            "bank" => "Chuyển khoản",
+            "momo" => "Ví MoMo",
+            "vnpay" => "VNPAY",
+            _ => order.PaymentMethod
+        };
+
+        // Calculate expected delivery date (3-5 days from order date)
+        var expectedDeliveryDate = order.CreatedAt.AddDays(5).ToString("dd/MM/yyyy");
+
+        // Get order items
+        var orderItems = order.OrderItems.Select(oi => new
+        {
+            ProductName = oi.ProductName,
+            ProductImage = oi.Product?.MainImage ?? "/images/placeholder.png",
+            Quantity = oi.Quantity,
+            Capacity = oi.Capacity,
+            Price = oi.Price,
+            Subtotal = oi.Subtotal
+        }).ToList();
+
+        // Calculate timeline dates
+        var timelineDates = new
+        {
+            OrderDate = order.CreatedAt.ToString("dd/MM HH:mm"),
+            ConfirmedDate = order.Status != "pending" ? order.CreatedAt.AddHours(2).ToString("dd/MM HH:mm") : null,
+            ShippingDate = (order.Status == "shipping" || order.Status == "completed") ? order.CreatedAt.AddDays(1).ToString("dd/MM HH:mm") : null,
+            CompletedDate = order.Status == "completed" ? order.CreatedAt.AddDays(3).ToString("dd/MM HH:mm") : null
+        };
+
         return Json(new
         {
             success = true,
@@ -757,10 +789,52 @@ public class AccountController : Controller
                 Id = order.Id,
                 OrderCode = order.OrderCode,
                 CreatedAt = order.CreatedAt.ToString("dd/MM/yyyy HH:mm"),
+                CreatedAtDate = order.CreatedAt.ToString("dd/MM/yyyy"),
                 Status = order.Status,
                 StatusName = statusName,
-                Total = order.Total
+                Total = order.Total,
+                PaymentMethod = paymentMethodName,
+                ShippingAddress = order.ShippingAddress,
+                ShippingProvince = order.ShippingProvince,
+                ShippingWard = order.ShippingWard,
+                CustomerName = order.CustomerName,
+                CustomerPhone = order.CustomerPhone,
+                ExpectedDeliveryDate = expectedDeliveryDate,
+                Items = orderItems,
+                TimelineDates = timelineDates
             }
         });
+    }
+
+    // POST: Account/CancelOrder
+    [HttpPost]
+    [IgnoreAntiforgeryToken]
+    public async Task<IActionResult> CancelOrder(string orderCode)
+    {
+        var userIdStr = HttpContext.Session.GetString("UserId");
+        if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+        {
+            return Json(new { success = false, message = "Vui lòng đăng nhập" });
+        }
+
+        var order = await _context.Orders
+            .FirstOrDefaultAsync(o => o.OrderCode == orderCode && o.UserId == userId);
+
+        if (order == null)
+        {
+            return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
+        }
+
+        // Only allow cancellation for pending orders
+        if (order.Status != "pending")
+        {
+            return Json(new { success = false, message = "Chỉ có thể hủy đơn hàng ở trạng thái 'Chờ xác nhận'" });
+        }
+
+        order.Status = "cancelled";
+        order.UpdatedAt = DateTime.Now;
+        await _context.SaveChangesAsync();
+
+        return Json(new { success = true, message = "Đã hủy đơn hàng thành công!" });
     }
 }

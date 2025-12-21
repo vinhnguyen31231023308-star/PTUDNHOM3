@@ -105,52 +105,57 @@
 
                 <div class="card-box hidden-up delay-100">
                     <div class="tracking-search">
-                        <input type="text" class="form-control" id="tracking-order-code" placeholder="Nhập mã đơn hàng (VD: ORD20250115123456)">
-                        <button class="btn btn-primary" onclick="searchTracking()">Tra cứu</button>
+                        <input type="text" class="form-control" id="tracking-order-code" placeholder="Nhập mã đơn hàng (VD: ORD20250115123456)" onkeypress="if(event.key === 'Enter') searchTracking();">
+                        <button class="btn btn-primary" onclick="searchTracking()">
+                            <i class="fas fa-search" style="margin-right: 8px;"></i>Tra cứu
+                        </button>
                     </div>
-                    <hr style="border: 0; border-top: 1px dashed #eee; margin: 20px 0;">
-                    <div style="display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 30px;">
-                        <div>
-                            <h3 style="font-size: 1.1rem; margin-bottom: 5px;">Mã đơn: <span id="tracking-order-code-display">--</span></h3>
-                            <p style="color: var(--text-gray); font-size: 0.9rem;">Dự kiến giao: <strong id="tracking-expected-date">--/--/----</strong></p>
-                        </div>
-                        <div style="text-align: right;">
-                            <span class="status-badge status-pending" id="tracking-status-badge" style="font-size: 1rem; padding: 8px 15px;">--</span>
-                        </div>
-                    </div>
-                    <div class="tracking-timeline">
-                        <div class="progress-bar-bg"></div>
-                        <div class="progress-bar-fill" id="tracking-progress" style="width: 0%;"></div>
-                        <div class="steps-wrapper">
-                            <div class="step-item" id="step-1">
-                                <div class="step-circle"><i class="fas fa-check"></i></div>
-                                <div class="step-label">Đã đặt hàng</div>
-                                <span class="step-date" id="step-1-date">--/--</span>
+                    <div id="tracking-result" style="display: none;">
+                        <hr style="border: 0; border-top: 1px dashed #eee; margin: 20px 0;">
+                        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 30px;">
+                            <div>
+                                <h3 style="font-size: 1.1rem; margin-bottom: 5px;">Mã đơn: <span id="tracking-order-code-display">--</span></h3>
+                                <p style="color: var(--text-gray); font-size: 0.9rem;">Ngày đặt: <strong id="tracking-order-date">--/--/----</strong></p>
+                                <p style="color: var(--text-gray); font-size: 0.9rem;">Dự kiến giao: <strong id="tracking-expected-date">--/--/----</strong></p>
                             </div>
-                            <div class="step-item" id="step-2">
-                                <div class="step-circle"><i class="fas fa-check"></i></div>
-                                <div class="step-label">Đã xác nhận</div>
-                                <span class="step-date" id="step-2-date">--/--</span>
-                            </div>
-                            <div class="step-item" id="step-3">
-                                <div class="step-circle"><i class="fas fa-truck"></i></div>
-                                <div class="step-label">Đang giao</div>
-                                <span class="step-date" id="step-3-date">--/--</span>
-                            </div>
-                            <div class="step-item" id="step-4">
-                                <div class="step-circle">4</div>
-                                <div class="step-label">Giao thành công</div>
-                                <span class="step-date" id="step-4-date">--/--</span>
+                            <div style="text-align: right;">
+                                <span class="status-badge status-pending" id="tracking-status-badge" style="font-size: 1rem; padding: 8px 15px;">--</span>
                             </div>
                         </div>
-                    </div>
-                    <div class="tracking-logs" id="tracking-logs">
-                        <h4 style="margin-bottom: 15px;">Chi tiết hành trình</h4>
-                        <div class="log-item">
-                            <div class="log-icon"><i class="fas fa-info-circle"></i></div>
-                            <div class="log-content">
-                                <h4>Nhập mã đơn hàng để xem chi tiết</h4>
-                                <p>Vui lòng nhập mã đơn hàng ở trên và nhấn "Tra cứu"</p>
+                        <div class="tracking-timeline">
+                            <div class="progress-bar-bg"></div>
+                            <div class="progress-bar-fill" id="tracking-progress" style="width: 0%;"></div>
+                            <div class="steps-wrapper">
+                                <div class="step-item" id="step-1">
+                                    <div class="step-circle"><i class="fas fa-check"></i></div>
+                                    <div class="step-label">Đã đặt hàng</div>
+                                    <span class="step-date" id="step-1-date">--/--</span>
+                                </div>
+                                <div class="step-item" id="step-2">
+                                    <div class="step-circle"><i class="fas fa-check"></i></div>
+                                    <div class="step-label">Đã xác nhận</div>
+                                    <span class="step-date" id="step-2-date">--/--</span>
+                                </div>
+                                <div class="step-item" id="step-3">
+                                    <div class="step-circle"><i class="fas fa-truck"></i></div>
+                                    <div class="step-label">Đang giao</div>
+                                    <span class="step-date" id="step-3-date">--/--</span>
+                                </div>
+                                <div class="step-item" id="step-4">
+                                    <div class="step-circle">4</div>
+                                    <div class="step-label">Giao thành công</div>
+                                    <span class="step-date" id="step-4-date">--/--</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tracking-logs" id="tracking-logs">
+                            <h4 style="margin-bottom: 15px;">Chi tiết hành trình</h4>
+                            <div class="log-item">
+                                <div class="log-icon"><i class="fas fa-info-circle"></i></div>
+                                <div class="log-content">
+                                    <h4>Nhập mã đơn hàng để xem chi tiết</h4>
+                                    <p>Vui lòng nhập mã đơn hàng ở trên và nhấn "Tra cứu"</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -179,38 +184,67 @@
                 <span class="subtitle">Giao hàng & Thanh toán</span>
                 <h2 class="section-title">Sổ địa chỉ</h2>
 
-                <div class="address-grid hidden-up delay-100">
-                    <div class="address-card default">
-                        <span class="badge-default">Mặc định</span>
-                        <div>
-                            <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 10px;">Địa chỉ giao hàng</h3>
-                            <p style="font-weight: 600; margin-bottom: 5px;">@(user?.FullName ?? "") <span style="font-weight: 400; color: #666;">@(user?.Phone ?? "")</span></p>
-                            <p style="color: var(--text-gray); font-size: 0.9rem; line-height: 1.5;">
-                                @if (orders.Any())
-                                {
-                                    var lastOrder = orders.OrderByDescending(o => o.CreatedAt).First();
-                                    @lastOrder.ShippingAddress
-                                    @if (!string.IsNullOrEmpty(lastOrder.ShippingProvince))
-                                    {
-                                        <text>, @lastOrder.ShippingProvince</text>
-                                    }
-                                    @if (!string.IsNullOrEmpty(lastOrder.ShippingWard))
-                                    {
-                                        <text>, @lastOrder.ShippingWard</text>
-                                    }
-                                }
-                                else
-                                {
-                                    <text>Chưa có địa chỉ giao hàng</text>
-                                }
-                            </p>
-                        </div>
-                        <div style="margin-top: 20px; display: flex; gap: 10px;">
-                            <button class="btn btn-outline" style="padding: 5px 15px; font-size: 0.8rem;" onclick="alert('Chức năng sửa địa chỉ sẽ được triển khai sau')">Sửa</button>
-                        </div>
-                    </div>
+                <div class="address-grid hidden-up delay-100" id="address-list">
+                    @if (orders.Any())
+                    {
+                        var uniqueAddresses = orders
+                            .Where(o => !string.IsNullOrEmpty(o.ShippingAddress))
+                            .GroupBy(o => new { o.ShippingAddress, o.ShippingProvince, o.ShippingWard })
+                            .Select(g => g.First())
+                            .OrderByDescending(o => o.CreatedAt)
+                            .Take(5)
+                            .ToList();
 
-                    <div class="address-card add-address-card" onclick="alert('Chức năng thêm địa chỉ sẽ được triển khai sau')">
+                        @foreach (var order in uniqueAddresses)
+                        {
+                            var isDefault = order == uniqueAddresses.First();
+                            <div class="address-card @(isDefault ? "default" : "")">
+                                @if (isDefault)
+                                {
+                                    <span class="badge-default">Mặc định</span>
+                                }
+                                <div>
+                                    <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 10px;">Địa chỉ giao hàng</h3>
+                                    <p style="font-weight: 600; margin-bottom: 5px;">@order.CustomerName <span style="font-weight: 400; color: #666;">@order.CustomerPhone</span></p>
+                                    <p style="color: var(--text-gray); font-size: 0.9rem; line-height: 1.5;">
+                                        @order.ShippingAddress
+                                        @if (!string.IsNullOrEmpty(order.ShippingProvince))
+                                        {
+                                            <text>, @order.ShippingProvince</text>
+                                        }
+                                        @if (!string.IsNullOrEmpty(order.ShippingWard))
+                                        {
+                                            <text>, @order.ShippingWard</text>
+                                        }
+                                    </p>
+                                </div>
+                                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                                    <button class="btn btn-outline" style="padding: 5px 15px; font-size: 0.8rem;" onclick="openEditAddressModal('@order.Id')">Sửa</button>
+                                    @if (!isDefault)
+                                    {
+                                        <button class="btn btn-danger-soft" style="padding: 5px 15px; font-size: 0.8rem; border-radius: 50px; border:none; cursor:pointer;" onclick="handleDeleteAddress('@order.Id', this)">Xóa</button>
+                                    }
+                                </div>
+                                <input type="hidden" class="address-data" data-name="@order.CustomerName" data-phone="@order.CustomerPhone" data-address="@order.ShippingAddress" data-province="@order.ShippingProvince" data-ward="@order.ShippingWard" />
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="address-card default">
+                            <span class="badge-default">Mặc định</span>
+                            <div>
+                                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 10px;">Địa chỉ giao hàng</h3>
+                                <p style="font-weight: 600; margin-bottom: 5px;">@(user?.FullName ?? "") <span style="font-weight: 400; color: #666;">@(user?.Phone ?? "")</span></p>
+                                <p style="color: var(--text-gray); font-size: 0.9rem; line-height: 1.5;">Chưa có địa chỉ giao hàng</p>
+                            </div>
+                            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                                <button class="btn btn-outline" style="padding: 5px 15px; font-size: 0.8rem;" onclick="openAddAddressModal()">Thêm địa chỉ</button>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="address-card add-address-card" onclick="openAddAddressModal()">
                         <i class="fas fa-plus-circle" style="font-size: 2rem; margin-bottom: 10px;"></i>
                         <span>Thêm địa chỉ mới</span>
                     </div>
@@ -292,6 +326,56 @@
         </div>
         <div class="modal-footer" style="text-align: right; padding-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
         </div>
+    </div>
+</div>
+
+<div id="address-modal" class="modal-overlay">
+    <div class="modal-content card-box">
+        <div class="modal-header">
+            <h3 id="modal-title">Thêm địa chỉ mới</h3>
+            <button type="button" class="modal-close" onclick="closeAddressModal()">&times;</button>
+        </div>
+        <form id="address-form" onsubmit="event.preventDefault(); saveAddress();">
+            <div class="form-group">
+                <label class="form-label">Tên người nhận <span style="color: #ef4444;">*</span></label>
+                <input type="text" id="recipient-name" class="form-control" placeholder="Nguyễn Văn A" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Số điện thoại <span style="color: #ef4444;">*</span></label>
+                <input type="tel" id="recipient-phone" class="form-control" placeholder="09xxxxxx" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Địa chỉ chi tiết (Số nhà, Tên đường) <span style="color: #ef4444;">*</span></label>
+                <input type="text" id="street-address" class="form-control" placeholder="Ví dụ: 123 Đường Cộng Hòa" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Tỉnh/Thành <span style="color: #ef4444;">*</span></label>
+                    <select id="province" class="form-control" required>
+                        <option value="">Chọn Tỉnh/Thành</option>
+                        <option value="HCM">TP. Hồ Chí Minh</option>
+                        <option value="HN">Hà Nội</option>
+                        <option value="DN">Đà Nẵng</option>
+                        <option value="HP">Hải Phòng</option>
+                        <option value="CT">Cần Thơ</option>
+                        <option value="KH">Khác</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Quận/Huyện</label>
+                    <input type="text" id="district" class="form-control" placeholder="Ví dụ: Quận 10">
+                </div>
+            </div>
+            <div class="form-group-checkbox">
+                <input type="checkbox" id="set-default-address">
+                <label for="set-default-address">Đặt làm địa chỉ mặc định</label>
+            </div>
+
+            <div style="text-align: right; margin-top: 20px;">
+                <button type="button" class="btn btn-outline" onclick="closeAddressModal()">Hủy</button>
+                <button type="submit" class="btn btn-primary">Lưu địa chỉ</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -386,10 +470,13 @@
     .toast-notification.error .toast-progress {
         background: #ef4444;
     }
+    .toast-notification.info .toast-progress {
+        background: #3b82f6;
+    }
     .toast-notification.hide {
         animation: slideOutRight 0.5s ease forwards;
     }
-    @keyframes slideInRight {
+    @@keyframes slideInRight {
         from {
             transform: translateX(100%);
             opacity: 0;
@@ -399,7 +486,7 @@
             opacity: 1;
         }
     }
-    @keyframes slideOutRight {
+    @@keyframes slideOutRight {
         from {
             transform: translateX(0);
             opacity: 1;
@@ -409,7 +496,7 @@
             opacity: 0;
         }
     }
-    @keyframes progressBar {
+    @@keyframes progressBar {
         from {
             width: 100%;
         }
