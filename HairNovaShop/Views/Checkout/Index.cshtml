@@ -24,6 +24,19 @@
                 @Html.AntiForgeryToken()
                 <input type="hidden" id="discountAmount" name="discountAmount" value="0" />
 
+                <!-- Chọn địa chỉ từ sổ địa chỉ -->
+                <div class="form-row single" style="margin-bottom: 20px;">
+                    <div class="form-group full-width">
+                        <label for="selectSavedAddress">Chọn địa chỉ đã lưu:</label>
+                        <select id="selectSavedAddress" class="form-control" style="padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                            <option value="">-- Chọn địa chỉ từ sổ địa chỉ --</option>
+                        </select>
+                        <small style="color: #888; font-size: 0.85rem; display: block; margin-top: 5px;">
+                            <i class="fas fa-info-circle"></i> Chọn địa chỉ để tự động điền thông tin
+                        </small>
+                    </div>
+                </div>
+
                 <!-- Họ tên + Tỉnh/TP -->
                 <div class="form-row">
                     <div class="form-group">
@@ -288,6 +301,106 @@
 @section Scripts {
     <script src="~/js/checkout.js" asp-append-version="true"></script>
     <script>
+        // Load saved addresses when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSavedAddresses();
+        });
+
+        async function loadSavedAddresses() {
+            try {
+                const response = await fetch('/Checkout/GetSavedAddresses');
+                
+                if (!response.ok) {
+                    console.error('Failed to load addresses:', response.status);
+                    return;
+                }
+                
+                const result = await response.json();
+                console.log('Addresses loaded:', result);
+                
+                const select = document.getElementById('selectSavedAddress');
+                if (!select) {
+                    console.error('Select element not found');
+                    return;
+                }
+                
+                if (!result.success) {
+                    console.log('No addresses found or user not logged in');
+                    return;
+                }
+                
+                if (!result.addresses || result.addresses.length === 0) {
+                    console.log('No saved addresses available');
+                    return;
+                }
+
+                // Clear existing options except the first one
+                while (select.children.length > 1) {
+                    select.removeChild(select.lastChild);
+                }
+
+                // Add address options
+                result.addresses.forEach((address, index) => {
+                    const option = document.createElement('option');
+                    const addressText = `${address.customerName} - ${address.shippingAddress}${address.shippingProvince ? ', ' + address.shippingProvince : ''}${address.shippingWard ? ', ' + address.shippingWard : ''}`;
+                    option.value = JSON.stringify(address);
+                    option.textContent = addressText;
+                    select.appendChild(option);
+                });
+
+                // Add event listener for address selection (only once)
+                if (!select.hasAttribute('data-listener-added')) {
+                    select.setAttribute('data-listener-added', 'true');
+                    select.addEventListener('change', function() {
+                        const selectedValue = this.value;
+                        if (selectedValue) {
+                            try {
+                                const address = JSON.parse(selectedValue);
+                                fillCheckoutForm(address);
+                            } catch (e) {
+                                console.error('Error parsing address:', e);
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading saved addresses:', error);
+            }
+        }
+
+        function fillCheckoutForm(address) {
+            // Fill main address fields
+            const fullnameInput = document.getElementById('fullname');
+            if (fullnameInput && address.customerName) {
+                fullnameInput.value = address.customerName;
+            }
+
+            const provinceSelect = document.getElementById('province');
+            if (provinceSelect && address.shippingProvince) {
+                provinceSelect.value = address.shippingProvince;
+            }
+
+            const wardSelect = document.getElementById('ward');
+            if (wardSelect && address.shippingWard) {
+                wardSelect.value = address.shippingWard;
+            }
+
+            const addressInput = document.getElementById('address');
+            if (addressInput && address.shippingAddress) {
+                addressInput.value = address.shippingAddress;
+            }
+
+            const phoneInput = document.getElementById('phone');
+            if (phoneInput && address.customerPhone) {
+                phoneInput.value = address.customerPhone;
+            }
+
+            const emailInput = document.getElementById('email');
+            if (emailInput && address.customerEmail) {
+                emailInput.value = address.customerEmail;
+            }
+        }
+
         // Cập nhật payment method và các field vào form khi submit
         document.getElementById('checkoutForm').addEventListener('submit', function(e) {
             const selectedPayment = document.querySelector('input[name="payment"]:checked');

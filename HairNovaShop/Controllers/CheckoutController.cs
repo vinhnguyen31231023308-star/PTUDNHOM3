@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using HairNovaShop.Data;
 using HairNovaShop.Models;
 using HairNovaShop.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace HairNovaShop.Controllers;
 
@@ -93,6 +94,49 @@ public class CheckoutController : Controller
         }
 
         return View();
+    }
+
+    // GET: Checkout/GetSavedAddresses
+    [HttpGet]
+    public async Task<IActionResult> GetSavedAddresses()
+    {
+        var userIdStr = HttpContext.Session.GetString("UserId");
+        if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+        {
+            return Json(new { success = false, message = "Vui lòng đăng nhập" });
+        }
+
+        // Lấy các địa chỉ từ orders đã có
+        var orders = await _context.Orders
+            .Where(o => o.UserId == userId && !string.IsNullOrEmpty(o.ShippingAddress))
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+
+        // Group by unique addresses (in memory)
+        var uniqueAddresses = orders
+            .GroupBy(o => new { 
+                ShippingAddress = o.ShippingAddress, 
+                ShippingProvince = o.ShippingProvince ?? "", 
+                ShippingWard = o.ShippingWard ?? "", 
+                CustomerName = o.CustomerName, 
+                CustomerPhone = o.CustomerPhone, 
+                CustomerEmail = o.CustomerEmail 
+            })
+            .Select(g => g.First())
+            .OrderByDescending(o => o.CreatedAt)
+            .Take(10)
+            .Select(o => new
+            {
+                customerName = o.CustomerName,
+                customerPhone = o.CustomerPhone,
+                customerEmail = o.CustomerEmail,
+                shippingAddress = o.ShippingAddress,
+                shippingProvince = o.ShippingProvince ?? "",
+                shippingWard = o.ShippingWard ?? ""
+            })
+            .ToList();
+
+        return Json(new { success = true, addresses = uniqueAddresses });
     }
 
     // POST: Checkout/PlaceOrder
