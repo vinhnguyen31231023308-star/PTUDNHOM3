@@ -31,10 +31,10 @@ public class Product
     [Range(0, double.MaxValue)]
     public decimal? OriginalPrice { get; set; }
 
-    // Base64 string để lưu hình ảnh chính
+    // Đường dẫn file hình ảnh chính (lưu trong wwwroot/uploads/products/)
     public string? MainImage { get; set; }
 
-    // JSON string để lưu mảng các hình ảnh phụ (base64 strings)
+    // JSON string để lưu mảng các đường dẫn hình ảnh phụ (file paths)
     public string? Images { get; set; }
 
     [StringLength(100)]

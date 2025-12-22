@@ -7,6 +7,7 @@ using HairNovaShop.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace HairNovaShop.Controllers;
 
@@ -14,10 +15,12 @@ namespace HairNovaShop.Controllers;
 public class AdminController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly IWebHostEnvironment _environment;
 
-    public AdminController(ApplicationDbContext context)
+    public AdminController(ApplicationDbContext context, IWebHostEnvironment environment)
     {
         _context = context;
+        _environment = environment;
     }
 
     // GET: Admin
@@ -350,40 +353,27 @@ public class AdminController : Controller
     {
         if (ModelState.IsValid)
         {
-            // Convert main image to base64
+            // Save main image to file
             if (mainImage != null && mainImage.Length > 0)
             {
-                using (var memoryStream = new MemoryStream())
-                {
-                    await mainImage.CopyToAsync(memoryStream);
-                    var imageBytes = memoryStream.ToArray();
-                    var base64String = Convert.ToBase64String(imageBytes);
-                    var contentType = mainImage.ContentType ?? "image/jpeg";
-                    model.MainImage = $"data:{contentType};base64,{base64String}";
-                }
+                model.MainImage = await SaveImageAsync(mainImage, "main");
             }
 
-            // Convert additional images to base64
-            if (images != null && images.Any())
+            // Save additional images to files
+            if (images != null && images.Any(i => i.Length > 0))
             {
-                var base64Images = new List<string>();
-                foreach (var image in images)
+                var imagePaths = new List<string>();
+                foreach (var image in images.Where(i => i.Length > 0))
                 {
-                    if (image.Length > 0)
+                    var imagePath = await SaveImageAsync(image, "additional");
+                    if (!string.IsNullOrEmpty(imagePath))
                     {
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            await image.CopyToAsync(memoryStream);
-                            var imageBytes = memoryStream.ToArray();
-                            var base64String = Convert.ToBase64String(imageBytes);
-                            var contentType = image.ContentType ?? "image/jpeg";
-                            base64Images.Add($"data:{contentType};base64,{base64String}");
-                        }
+                        imagePaths.Add(imagePath);
                     }
                 }
-                if (base64Images.Any())
+                if (imagePaths.Any())
                 {
-                    model.Images = System.Text.Json.JsonSerializer.Serialize(base64Images);
+                    model.Images = System.Text.Json.JsonSerializer.Serialize(imagePaths);
                 }
             }
 
@@ -458,52 +448,47 @@ public class AdminController : Controller
 
         if (ModelState.IsValid)
         {
-            // Convert new main image to base64 if provided
+            // Save new main image to file if provided
             if (mainImage != null && mainImage.Length > 0)
             {
-                using (var memoryStream = new MemoryStream())
+                // Delete old main image if exists
+                if (!string.IsNullOrEmpty(product.MainImage))
                 {
-                    await mainImage.CopyToAsync(memoryStream);
-                    var imageBytes = memoryStream.ToArray();
-                    var base64String = Convert.ToBase64String(imageBytes);
-                    var contentType = mainImage.ContentType ?? "image/jpeg";
-                    product.MainImage = $"data:{contentType};base64,{base64String}";
+                    DeleteImageFile(product.MainImage);
                 }
+                product.MainImage = await SaveImageAsync(mainImage, "main");
             }
 
-            // Convert additional images to base64 if provided
+            // Handle additional images
             if (images != null && images.Any(i => i.Length > 0))
             {
-                var base64Images = new List<string>();
+                var imagePaths = new List<string>();
                 
-                // Keep existing images (they should already be base64)
+                // Keep existing images (they are file paths now)
                 if (!string.IsNullOrEmpty(product.Images))
                 {
                     try
                     {
-                        var existingImages = System.Text.Json.JsonSerializer.Deserialize<List<string>>(product.Images);
-                        if (existingImages != null)
+                        var existingPaths = System.Text.Json.JsonSerializer.Deserialize<List<string>>(product.Images);
+                        if (existingPaths != null)
                         {
-                            base64Images.AddRange(existingImages);
+                            imagePaths.AddRange(existingPaths);
                         }
                     }
                     catch { }
                 }
 
-                // Add new images as base64
+                // Add new images as file paths
                 foreach (var image in images.Where(i => i.Length > 0))
                 {
-                    using (var memoryStream = new MemoryStream())
+                    var imagePath = await SaveImageAsync(image, "additional");
+                    if (!string.IsNullOrEmpty(imagePath))
                     {
-                        await image.CopyToAsync(memoryStream);
-                        var imageBytes = memoryStream.ToArray();
-                        var base64String = Convert.ToBase64String(imageBytes);
-                        var contentType = image.ContentType ?? "image/jpeg";
-                        base64Images.Add($"data:{contentType};base64,{base64String}");
+                        imagePaths.Add(imagePath);
                     }
                 }
 
-                product.Images = System.Text.Json.JsonSerializer.Serialize(base64Images);
+                product.Images = System.Text.Json.JsonSerializer.Serialize(imagePaths);
             }
 
             // Update other fields
@@ -574,13 +559,98 @@ public class AdminController : Controller
             return NotFound();
         }
 
-        // No need to delete files since images are stored as base64 in database
+        // Delete image files
+        if (!string.IsNullOrEmpty(product.MainImage))
+        {
+            DeleteImageFile(product.MainImage);
+        }
+        
+        if (!string.IsNullOrEmpty(product.Images))
+        {
+            try
+            {
+                var imagePaths = System.Text.Json.JsonSerializer.Deserialize<List<string>>(product.Images);
+                if (imagePaths != null)
+                {
+                    foreach (var path in imagePaths)
+                    {
+                        DeleteImageFile(path);
+                    }
+                }
+            }
+            catch { }
+        }
+
         var productName = product.Name;
         _context.Products.Remove(product);
         await _context.SaveChangesAsync();
 
         TempData["Success"] = $"Đã xóa sản phẩm {productName} thành công!";
         return RedirectToAction("Products");
+    }
+
+    // Helper methods for image handling
+    private async Task<string> SaveImageAsync(IFormFile imageFile, string prefix)
+    {
+        if (imageFile == null || imageFile.Length == 0)
+            return string.Empty;
+
+        // Create uploads/products directory if it doesn't exist
+        var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "products");
+        if (!Directory.Exists(uploadsFolder))
+        {
+            Directory.CreateDirectory(uploadsFolder);
+        }
+
+        // Generate unique filename
+        var extension = Path.GetExtension(imageFile.FileName);
+        var fileName = $"{prefix}_{Guid.NewGuid()}{extension}";
+        var filePath = Path.Combine(uploadsFolder, fileName);
+
+        // Save file
+        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        {
+            await imageFile.CopyToAsync(fileStream);
+        }
+
+        // Return relative path from wwwroot
+        return $"/uploads/products/{fileName}";
+    }
+
+    private void DeleteImageFile(string imagePath)
+    {
+        if (string.IsNullOrEmpty(imagePath))
+            return;
+
+        try
+        {
+            // Handle both relative paths (/uploads/...) and absolute paths
+            string fullPath;
+            if (imagePath.StartsWith("/"))
+            {
+                // Relative path from wwwroot
+                fullPath = Path.Combine(_environment.WebRootPath, imagePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+            }
+            else if (imagePath.StartsWith("data:"))
+            {
+                // Old base64 format - skip deletion
+                return;
+            }
+            else
+            {
+                // Assume it's already a full path
+                fullPath = imagePath;
+            }
+
+            if (System.IO.File.Exists(fullPath))
+            {
+                System.IO.File.Delete(fullPath);
+            }
+        }
+        catch
+        {
+            // Silently fail if file doesn't exist or can't be deleted
+        }
     }
 
     // ==================== CATEGORIES MANAGEMENT ====================
