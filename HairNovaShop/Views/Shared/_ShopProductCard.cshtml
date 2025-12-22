@@ -1,7 +1,7 @@
 @model HairNovaShop.Models.Product
 
 <div class="product-card" data-id="@Model.Id">
-    <button class="product-wishlist-btn wishlist-btn" type="button" aria-label="Yêu thích" data-product-id="@Model.Id" onclick="toggleWishlist(@Model.Id, this); return false;">
+    <button class="product-wishlist-btn wishlist-btn" type="button" aria-label="Yêu thích" data-product-id="@Model.Id" onclick="try { if(typeof window.toggleWishlist === 'function') { window.toggleWishlist(@Model.Id, this); } else { console.error('toggleWishlist not available'); } } catch(e) { console.error('Error calling toggleWishlist:', e); } return false;">
         <i class="fa-regular fa-heart"></i>
     </button>
 

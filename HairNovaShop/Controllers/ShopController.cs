@@ -101,4 +101,37 @@ public class ShopController : Controller
 
         return View(products);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> SearchSuggestions(string query, int limit = 8)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return Json(new List<object>());
+        }
+
+        var searchTerm = query.Trim().ToLower();
+
+        var suggestions = await _context.Products
+            .Where(p => p.IsActive && (
+                (p.Name != null && p.Name.ToLower().Contains(searchTerm)) ||
+                (p.Description != null && p.Description.ToLower().Contains(searchTerm)) ||
+                (p.Brand != null && p.Brand.ToLower().Contains(searchTerm)) ||
+                (p.Tags != null && p.Tags.ToLower().Contains(searchTerm))
+            ))
+            .OrderByDescending(p => p.Rating)
+            .ThenByDescending(p => p.ReviewCount)
+            .Take(limit)
+            .Select(p => new
+            {
+                id = p.Id,
+                name = p.Name,
+                brand = p.Brand ?? "",
+                price = p.Price,
+                image = p.MainImage ?? ""
+            })
+            .ToListAsync();
+
+        return Json(suggestions);
+    }
 }

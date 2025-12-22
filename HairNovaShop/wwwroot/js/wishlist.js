@@ -3,7 +3,8 @@
 // =========================================
 
 // Toggle wishlist item - exposed to global scope
-window.toggleWishlist = async function(productId, button) {
+// Ensure function is defined to avoid timing issues
+window.toggleWishlist = window.toggleWishlist || async function(productId, button) {
     try {
         const response = await fetch('/Wishlist/Toggle', {
             method: 'POST',
@@ -39,20 +40,28 @@ window.toggleWishlist = async function(productId, button) {
             }
             
             // Update header badge
-            window.updateWishlistBadge(result.count);
+            if (window.updateWishlistBadge) {
+                window.updateWishlistBadge(result.count);
+            }
             
             // Show toast
-            window.showWishlistToastGlobal(result.added ? 'added' : 'removed', result.message);
+            if (window.showWishlistToastGlobal) {
+                window.showWishlistToastGlobal(result.added ? 'added' : 'removed', result.message);
+            }
         } else {
-            alert(result.message);
+            alert(result.message || 'Có lỗi xảy ra');
         }
     } catch (error) {
         console.error('Error toggling wishlist:', error);
+        // Fallback: show error message if fetch fails
+        if (button) {
+            alert('Có lỗi xảy ra khi thêm vào yêu thích. Vui lòng thử lại sau.');
+        }
     }
 };
 
 // Update wishlist badge in header
-window.updateWishlistBadge = function(count) {
+window.updateWishlistBadge = window.updateWishlistBadge || function(count) {
     const badges = document.querySelectorAll('.wishlist-badge');
     badges.forEach(badge => {
         badge.textContent = count;
@@ -61,7 +70,7 @@ window.updateWishlistBadge = function(count) {
 };
 
 // Load user's wishlist and update UI
-window.loadUserWishlist = async function() {
+window.loadUserWishlist = window.loadUserWishlist || async function() {
     try {
         const response = await fetch('/Wishlist/GetUserWishlist');
         const result = await response.json();
@@ -86,18 +95,20 @@ window.loadUserWishlist = async function() {
 };
 
 // Get wishlist count
-window.getWishlistCount = async function() {
+window.getWishlistCount = window.getWishlistCount || async function() {
     try {
         const response = await fetch('/Wishlist/Count');
         const result = await response.json();
-        updateWishlistBadge(result.count);
+        if (window.updateWishlistBadge) {
+            window.updateWishlistBadge(result.count);
+        }
     } catch (error) {
         console.error('Error getting wishlist count:', error);
     }
 };
 
-// Global toast for wishlist
-function showWishlistToastGlobal(type, message) {
+// Global toast for wishlist - expose to window
+window.showWishlistToastGlobal = window.showWishlistToastGlobal || function(type, message) {
     // Check if toast container exists
     let toast = document.getElementById('globalWishlistToast');
     
