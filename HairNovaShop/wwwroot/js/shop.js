@@ -20,6 +20,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Helper function to preserve search parameter when redirecting
+    function getCurrentSearchParam() {
+        const url = new URL(window.location.href);
+        return url.searchParams.get('search') || '';
+    }
+
     // Category buttons - redirect with category parameter
     catButtons.forEach(btn => {
         btn.addEventListener("click", function() {
@@ -36,6 +42,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 url.searchParams.set('category', category);
             }
             url.searchParams.delete('page'); // Reset to page 1 when filtering
+            // Preserve search parameter
+            const searchTerm = getCurrentSearchParam();
+            if (searchTerm) {
+                url.searchParams.set('search', searchTerm);
+            }
             window.location.href = url.toString();
         });
     });
@@ -47,6 +58,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const url = new URL(window.location.href);
             url.searchParams.set('sort', sort);
             url.searchParams.delete('page'); // Reset to page 1 when sorting
+            // Preserve search parameter
+            const searchTerm = getCurrentSearchParam();
+            if (searchTerm) {
+                url.searchParams.set('search', searchTerm);
+            }
             window.location.href = url.toString();
         });
     });
@@ -61,6 +77,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 url.searchParams.delete('brand');
             }
             url.searchParams.delete('page'); // Reset to page 1 when filtering
+            // Preserve search parameter
+            const searchTerm = getCurrentSearchParam();
+            if (searchTerm) {
+                url.searchParams.set('search', searchTerm);
+            }
             window.location.href = url.toString();
         });
     });
@@ -74,6 +95,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 const url = new URL(window.location.href);
                 url.searchParams.set('maxPrice', this.value);
                 url.searchParams.delete('page'); // Reset to page 1 when filtering
+                // Preserve search parameter
+                const searchTerm = getCurrentSearchParam();
+                if (searchTerm) {
+                    url.searchParams.set('search', searchTerm);
+                }
                 window.location.href = url.toString();
             }, 500); // Debounce 500ms
         });

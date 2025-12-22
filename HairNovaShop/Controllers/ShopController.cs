@@ -14,7 +14,7 @@ public class ShopController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index(string? category, string? brand, string? sort = "popular", int page = 1, decimal? maxPrice = null)
+    public async Task<IActionResult> Index(string? category, string? brand, string? sort = "popular", int page = 1, decimal? maxPrice = null, string? search = null)
     {
         // Get maximum price from all active products
         var maxProductPrice = await _context.Products
@@ -24,6 +24,19 @@ public class ShopController : Controller
         var query = _context.Products
             .Include(p => p.Category)
             .Where(p => p.IsActive);
+
+        // Search functionality - search in name, description, brand, and tags
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var searchTerm = search.Trim().ToLower();
+            query = query.Where(p => 
+                (p.Name != null && p.Name.ToLower().Contains(searchTerm)) ||
+                (p.Description != null && p.Description.ToLower().Contains(searchTerm)) ||
+                (p.DetailedDescription != null && p.DetailedDescription.ToLower().Contains(searchTerm)) ||
+                (p.Brand != null && p.Brand.ToLower().Contains(searchTerm)) ||
+                (p.Tags != null && p.Tags.ToLower().Contains(searchTerm))
+            );
+        }
 
         // Filter by category name
         if (!string.IsNullOrEmpty(category) && category != "all")
@@ -70,6 +83,7 @@ public class ShopController : Controller
         ViewBag.TotalProducts = totalProducts;
         ViewBag.MaxPrice = maxPrice ?? maxProductPrice;
         ViewBag.MaxProductPrice = maxProductPrice;
+        ViewBag.SearchTerm = search;
 
         // Get categories for filter sidebar
         ViewBag.Categories = await _context.Categories

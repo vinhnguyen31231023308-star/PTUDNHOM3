@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(() => searchInput.focus(), 200);
     });
 
-    // 4. Đóng thanh tìm kiếm
+    // 5. Đóng thanh tìm kiếm
     closeSearchBtn.addEventListener('click', function () {
         searchOverlay.classList.remove('active');
     });
@@ -30,6 +30,37 @@ document.addEventListener('DOMContentLoaded', function () {
             searchOverlay.classList.remove('active');
         }
     });
+
+    // 7. Xử lý submit form tìm kiếm
+    const searchSubmitBtn = document.querySelector('.btn-search-submit');
+    if (searchInput && searchSubmitBtn) {
+        // Submit khi nhấn Enter trong ô input
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performSearch();
+            }
+        });
+
+        // Submit khi click nút "Tìm kiếm"
+        searchSubmitBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            performSearch();
+        });
+
+        function performSearch() {
+            const searchTerm = searchInput.value.trim();
+            if (searchTerm) {
+                // Chuyển đến trang Shop với parameter search
+                const url = new URL('/Shop', window.location.origin);
+                url.searchParams.set('search', searchTerm);
+                window.location.href = url.toString();
+            } else {
+                // Nếu không có từ khóa, chỉ chuyển đến Shop
+                window.location.href = '/Shop';
+            }
+        }
+    }
 
     // 6. User dropdown menu (Additional for ASP.NET Core)
     const userBtn = document.getElementById('userBtn');
