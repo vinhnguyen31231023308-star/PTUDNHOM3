@@ -28,3 +28,21 @@ body {
   -webkit-transform: scale(1);
   transform: scale(1);
 }
+
+/* Animation Optimization - GPU acceleration */
+.hidden-up,
+.hidden-left,
+.hidden-right {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+}
+
+/* Remove will-change after animation completes to free resources */
+.hidden-up.show,
+.hidden-left.show,
+.hidden-right.show {
+    will-change: auto;
+}

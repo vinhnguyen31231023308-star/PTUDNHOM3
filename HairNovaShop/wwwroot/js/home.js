@@ -31,52 +31,10 @@ document.addEventListener('DOMContentLoaded', function () {
     /* =========================================
        INTERSECTION OBSERVER & ANIMATION 
        ========================================= */
-    const observerOptions = {
-        root: null,
-        rootMargin: "0px",
-        threshold: 0.1
-    };
-
-    const observer = new IntersectionObserver((entries, obs) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('show');
-
-                // Kích hoạt chạy số nếu có
-                if (entry.target.querySelector('.stat-number')) {
-                    runCounters(entry.target);
-                }
-                obs.unobserve(entry.target);
-            }
-        });
-    }, observerOptions);
-
-    // Chỉ tìm các phần tử hidden bên trong .home
-    const hiddenElements = homeScope.querySelectorAll('.hidden-up, .hidden-left, .hidden-right');
-    hiddenElements.forEach((el) => observer.observe(el));
-
-    /* =========================================
-       COUNTER LOGIC (Hàm nội bộ)
-       ========================================= */
-    function runCounters(container) {
-        const counters = container.querySelectorAll('.stat-number');
-        const speed = 1000;
-
-        counters.forEach(counter => {
-            const animate = () => {
-                const value = +counter.getAttribute('data-target');
-                const data = +counter.innerText;
-                const time = value / speed;
-
-                if (data < value) {
-                    counter.innerText = Math.ceil(data + time + 1);
-                    setTimeout(animate, 30);
-                } else {
-                    counter.innerText = value + "+";
-                }
-            }
-            animate();
-        });
+    // Use shared animation utility instead of creating new observer
+    // Stats numbers are already handled by site.js shared utility
+    if (window.observeAnimations) {
+        window.observeAnimations('.hidden-up, .hidden-left, .hidden-right', homeScope);
     }
 
     /* =========================================

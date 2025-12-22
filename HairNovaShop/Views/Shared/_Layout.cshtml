@@ -159,7 +159,13 @@
     <!-- Viewport & Scaling Detection & Normalization -->
     <script>
         (function() {
-            // #region agent log - Detect viewport and scaling on load
+            // #region agent log - Hypothesis A: Viewport meta tag too strict
+            const viewportMeta = document.querySelector('meta[name="viewport"]');
+            const viewportContent = viewportMeta ? viewportMeta.getAttribute('content') : 'not found';
+            fetch('http://127.0.0.1:7242/ingest/9b7c6f72-11df-457e-a521-b0316a2b2596',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'_Layout.cshtml:viewport-meta',message:'Viewport meta tag content check',data:{viewportContent:viewportContent,hasUserScalableNo:viewportContent.includes('user-scalable=no'),hasMaxScale:viewportContent.includes('maximum-scale')},timestamp:Date.now(),sessionId:'debug-session',runId:'viewport-check',hypothesisId:'A'})}).catch(()=>{});
+            // #endregion
+            
+            // #region agent log - Hypothesis B: Browser zoom level differs
             const viewportData = {
                 innerWidth: window.innerWidth,
                 outerWidth: window.outerWidth,
@@ -168,28 +174,39 @@
                 devicePixelRatio: window.devicePixelRatio || 1,
                 screenWidth: screen.width,
                 screenHeight: screen.height,
+                screenAvailWidth: screen.availWidth,
+                screenAvailHeight: screen.availHeight,
                 clientWidth: document.documentElement.clientWidth,
                 clientHeight: document.documentElement.clientHeight,
                 computedZoom: window.outerWidth / window.innerWidth,
                 userAgent: navigator.userAgent
             };
-            fetch('http://127.0.0.1:7242/ingest/9b7c6f72-11df-457e-a521-b0316a2b2596',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'_Layout.cshtml:viewport-debug',message:'Viewport dimensions and scaling detected',data:viewportData,timestamp:Date.now(),sessionId:'debug-session',runId:'viewport-check',hypothesisId:'A'})}).catch(()=>{});
-            // #endregion
-            
-            // Detect if browser zoom is not 100% (hypothesis: browser zoom level differs)
-            // #region agent log - Check browser zoom level
             const zoomLevel = viewportData.computedZoom;
-            const isZoomed = Math.abs(zoomLevel - 1.0) > 0.05; // Allow 5% tolerance
-            fetch('http://127.0.0.1:7242/ingest/9b7c6f72-11df-457e-a521-b0316a2b2596',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'_Layout.cshtml:zoom-detection',message:'Browser zoom level check',data:{zoomLevel:zoomLevel,isZoomed:isZoomed,zoomPercent:(zoomLevel * 100).toFixed(1)},timestamp:Date.now(),sessionId:'debug-session',runId:'viewport-check',hypothesisId:'B'})}).catch(()=>{});
+            const isZoomed = Math.abs(zoomLevel - 1.0) > 0.05;
+            fetch('http://127.0.0.1:7242/ingest/9b7c6f72-11df-457e-a521-b0316a2b2596',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'_Layout.cshtml:zoom-detection',message:'Browser zoom level check',data:{...viewportData,zoomLevel:zoomLevel,isZoomed:isZoomed,zoomPercent:(zoomLevel * 100).toFixed(1)},timestamp:Date.now(),sessionId:'debug-session',runId:'viewport-check',hypothesisId:'B'})}).catch(()=>{});
             // #endregion
             
-            // Normalize viewport: Force scale to 1.0 if zoom is detected
-            // Note: We cannot programmatically change browser zoom, but we can detect and log it
+            // #region agent log - Hypothesis C: Device pixel ratio differs
+            fetch('http://127.0.0.1:7242/ingest/9b7c6f72-11df-457e-a521-b0316a2b2596',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'_Layout.cshtml:dpr-check',message:'Device pixel ratio check',data:{devicePixelRatio:viewportData.devicePixelRatio,screenRatio:viewportData.screenWidth/viewportData.clientWidth,expectedDPR:viewportData.screenWidth/viewportData.innerWidth},timestamp:Date.now(),sessionId:'debug-session',runId:'viewport-check',hypothesisId:'C'})}).catch(()=>{});
+            // #endregion
+            
+            // #region agent log - Hypothesis D: CSS font-size scaling
+            const htmlStyle = window.getComputedStyle(document.documentElement);
+            const bodyStyle = window.getComputedStyle(document.body);
+            const htmlFontSize = htmlStyle.fontSize;
+            const bodyFontSize = bodyStyle.fontSize;
+            const textSizeAdjust = bodyStyle.webkitTextSizeAdjust || bodyStyle.textSizeAdjust || 'none';
+            fetch('http://127.0.0.1:7242/ingest/9b7c6f72-11df-457e-a521-b0316a2b2596',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'_Layout.cshtml:font-size-check',message:'CSS font-size and text-size-adjust check',data:{htmlFontSize:htmlFontSize,bodyFontSize:bodyFontSize,textSizeAdjust:textSizeAdjust,innerWidth:viewportData.innerWidth,isTablet:viewportData.innerWidth >= 768},timestamp:Date.now(),sessionId:'debug-session',runId:'viewport-check',hypothesisId:'D'})}).catch(()=>{});
+            // #endregion
+            
+            // #region agent log - Hypothesis E: CSS transform scale on body
+            const bodyTransform = bodyStyle.transform;
+            const bodyScale = bodyTransform && bodyTransform !== 'none' ? bodyTransform : 'none';
+            fetch('http://127.0.0.1:7242/ingest/9b7c6f72-11df-457e-a521-b0316a2b2596',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'_Layout.cshtml:transform-check',message:'CSS transform scale check on body',data:{bodyTransform:bodyScale},timestamp:Date.now(),sessionId:'debug-session',runId:'viewport-check',hypothesisId:'E'})}).catch(()=>{});
+            // #endregion
+            
             if (isZoomed) {
                 console.warn('Browser zoom level detected:', (zoomLevel * 100).toFixed(1) + '%');
-                // #region agent log - Zoom normalization attempt
-                fetch('http://127.0.0.1:7242/ingest/9b7c6f72-11df-457e-a521-b0316a2b2596',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'_Layout.cshtml:zoom-normalization',message:'Zoom level differs from 100%, user may need to reset browser zoom',data:{detectedZoom:zoomLevel},timestamp:Date.now(),sessionId:'debug-session',runId:'viewport-check',hypothesisId:'B'})}).catch(()=>{});
-                // #endregion
             }
         })();
     </script>
