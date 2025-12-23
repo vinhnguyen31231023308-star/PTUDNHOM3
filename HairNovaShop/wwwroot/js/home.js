@@ -242,10 +242,68 @@ document.addEventListener('DOMContentLoaded', function () {
     /* =========================================
        GLOBAL FUNCTIONS FOR PRODUCT CARDS
        ========================================= */
-    window.addToWishlist = function(productId) {
-        // TODO: Implement wishlist
-        console.log('Add to wishlist:', productId);
-        alert('Chức năng yêu thích đang được phát triển!');
+    window.addToWishlist = function(productId, buttonElement) {
+        // If button element is passed, use it directly
+        if (buttonElement && typeof window.toggleWishlist === 'function') {
+            window.toggleWishlist(productId, buttonElement);
+            return;
+        }
+
+        // Check if toggleWishlist is available
+        if (typeof window.toggleWishlist !== 'function') {
+            console.error('toggleWishlist function not available');
+            alert('Chức năng yêu thích đang được tải. Vui lòng thử lại sau.');
+            return;
+        }
+
+        // Try multiple strategies to find the button
+        let button = null;
+        
+        // Strategy 1: Find by data-product-id attribute
+        button = document.querySelector(`.wishlist-btn[data-product-id="${productId}"]`);
+        
+        // Strategy 2: Find by data-id on product-card and then find wishlist button
+        if (!button) {
+            const productCard = document.querySelector(`.product-card[data-id="${productId}"], [data-id="${productId}"]`);
+            if (productCard) {
+                button = productCard.querySelector('.wishlist-btn, .action-btn[onclick*="addToWishlist"], .action-btn[onclick*="toggleWishlist"]');
+            }
+        }
+        
+        // Strategy 3: Find by looking for link to product detail page
+        if (!button) {
+            const productCards = document.querySelectorAll('.product-card');
+            for (let card of productCards) {
+                const cardLink = card.querySelector('a[href*="/Product/Detail/' + productId + '"]');
+                if (cardLink) {
+                    button = card.querySelector('.wishlist-btn, .action-btn');
+                    break;
+                }
+            }
+        }
+        
+        // Strategy 4: Find by searching all buttons with onclick containing the productId
+        if (!button) {
+            const allButtons = document.querySelectorAll('button[onclick*="' + productId + '"]');
+            for (let btn of allButtons) {
+                if (btn.onclick && btn.onclick.toString().includes('addToWishlist') || btn.onclick.toString().includes('toggleWishlist')) {
+                    button = btn;
+                    break;
+                }
+            }
+        }
+
+        // Call toggleWishlist with the found button, or show error
+        if (button) {
+            // Ensure button has required attributes
+            if (!button.hasAttribute('data-product-id')) {
+                button.setAttribute('data-product-id', productId);
+            }
+            window.toggleWishlist(productId, button);
+        } else {
+            console.error('Could not find wishlist button for product:', productId);
+            alert('Không tìm thấy nút yêu thích. Vui lòng thử lại sau.');
+        }
     };
 
     window.addToCart = function(productId, quantity = 1, capacity = null) {

@@ -280,7 +280,7 @@
                     <div class="slider-track" id="productTrack">
                         @foreach (var product in allFeaturedProducts)
                         {
-                            <div class="product-card" data-category="@(product.Category?.Name ?? "")">
+                            <div class="product-card" data-id="@product.Id" data-category="@(product.Category?.Name ?? "")">
                                 <a asp-controller="Product" asp-action="Detail" asp-route-id="@product.Id" style="text-decoration: none; color: inherit; display: block;">
                                     <div class="prod-img-box">
                                         @if (product.OnSale)
@@ -304,10 +304,8 @@
                                             <img src="/images/placeholder.png" alt="@product.Name" class="prod-img">
                                         }
                                         <div class="action-icons">
-                                            <button class="action-btn" type="button" onclick="event.preventDefault(); event.stopPropagation(); addToWishlist(@product.Id);">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                                </svg>
+                                            <button class="action-btn wishlist-btn" type="button" data-product-id="@product.Id" onclick="event.preventDefault(); event.stopPropagation(); if(typeof window.toggleWishlist === 'function') { window.toggleWishlist(@product.Id, this); } else { window.addToWishlist(@product.Id, this); }">
+                                                <i class="fa-regular fa-heart"></i>
                                             </button>
                                             <button class="action-btn" type="button" onclick="event.preventDefault(); event.stopPropagation(); addToCart(@product.Id);">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
