@@ -24,12 +24,12 @@
 
 .news-page {
   max-width: 1200px;         
-  margin: 40px auto 80px;
-  padding: 40px 0 8px;
+  margin: 0 auto 80px;
+  padding: 20px 0 8px;
 }
 
 .news-header {
- padding: 120px 0 8px;
+ padding: 20px 0 8px;
   margin-bottom: 24px;
   display: flex;
   justify-content: space-between;

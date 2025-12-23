@@ -162,7 +162,7 @@ body {
 /* --- Giới thiệu  --- */
 
 .about-section {
-    padding: 170px 0 150px;
+    padding: 20px 0 150px;
     background: linear-gradient(135deg, #fff 0%, var(--bs-light-bg) 100%);
     overflow: hidden;
     position: relative;

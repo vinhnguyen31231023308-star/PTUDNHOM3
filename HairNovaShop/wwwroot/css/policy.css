@@ -510,7 +510,7 @@ nav {
 /* === BANNER POLICY CSS === */
 
 .policy-banner-section {
-    padding: 150px 0 60px;
+    padding: 20px 0 60px;
     background-color: #fff;
     overflow: visible; /* Để cuốn sách có thể nhô ra ngoài */
 }

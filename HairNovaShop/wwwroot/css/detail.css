@@ -215,7 +215,7 @@ header {
 /* BREADCRUMB */
 .page-header {
     padding: 0 0 10px;
-    margin-top: calc(var(--top-bar-height) + var(--header-height) );
+    margin-top: 0;
     background-color: var(--bs-light-bg);
     text-align: center;
     position: relative;

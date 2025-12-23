@@ -30,13 +30,22 @@ body {
 /* --- SCROLLABLE CONTENT AREA --- */
 .scrollable-content {
     position: fixed;
-    top: 0;
+    top: calc(var(--top-bar-height) + var(--header-height)); /* 110px */
     left: 0;
     right: 0;
     bottom: 0;
     overflow-y: auto;
     overflow-x: hidden;
     background-color: #fff;
+}
+
+.scrollable-content > main {
+    padding: 0;
+    margin: 0;
+}
+
+.scrollable-content > main > *:first-child {
+    margin-top: 0 !important;
 }
 
 /* --- TOP BAR --- */

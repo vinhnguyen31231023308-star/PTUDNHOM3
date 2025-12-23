@@ -320,7 +320,7 @@ nav {
    ========================================= */
 .home .banner {
     display: flex;
-    padding: calc(var(--top-bar-height) + var(--header-height) ) 5% 0px;
+    padding: 0 5% 0px;
     gap: 20px;
     align-items: center;
     justify-content: space-between;
@@ -1259,7 +1259,7 @@ nav {
     .home .banner {
         flex-direction: column;
         text-align: center;
-        padding-top: 180px;
+        padding-top: 20px;
         gap: 60px;
     }
 
